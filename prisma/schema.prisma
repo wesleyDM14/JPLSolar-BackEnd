@@ -8,3 +8,154 @@ datasource db {
     url               = env("DATABASE_URL")
     shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
+
+model User {
+    id       String  @id @default(uuid())
+    name     String?
+    login    String  @unique
+    password String
+    isAdmin  Boolean @default(false)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    //Relacionamentos
+    clients   Client[]
+    contracts Contract[]
+}
+
+model Client {
+    id      String  @id @default(uuid())
+    name    String
+    phone   String?
+    address String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    //Relacionamento com a tabela User
+    userId String
+    User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    //Relacionamentos
+    plants Plant[]
+}
+
+model Plant {
+    id                  String   @id @default(uuid())
+    local               String
+    inversor            Inversor
+    inverterPot         Float
+    panel               String
+    panelPower          Float
+    numberPanel         Int
+    installedPower      Float
+    login               String
+    password            String
+    code                String   @unique
+    installationDate    DateTime
+    estimatedGeneration Float
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    //Relacionamento com a tabela cliente
+    clientId String
+    client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+}
+
+model Contract {
+    id             Int         @id @default(autoincrement())
+    nome           String
+    email          String
+    profissao      String
+    estadoCivil    EstadoCivil
+    dataNascimento DateTime
+    cpf            String
+    rg             String
+
+    dataContrato        DateTime
+    carencia            Int? //carencia em dias
+    dataPrimeiraParcela DateTime
+    quantParcelas       Int
+    priceTotal          Float
+    priceParcela        Float
+
+    modeloModulos  String
+    modeloInversor String
+    potModulos     Float
+    potInversor    Float
+
+    avalistaId Int?
+    avalista   Avalista? @relation(fields: [avalistaId], references: [id])
+
+    enderecoId  Int
+    endereco    Endereco      @relation(fields: [enderecoId], references: [id], onDelete: Cascade)
+    Promissoria Promissoria[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId String
+}
+
+model Endereco {
+    id         Int    @id @default(autoincrement())
+    logradouro String
+    numero     Int
+    bairro     String
+    cidade     String
+    uf         String
+    cep        String
+
+    contratos Contract[]
+    avalistas Avalista[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Avalista {
+    id        Int    @id @default(autoincrement())
+    nome      String
+    profissao String
+    cpf       String
+
+    Contract Contract[]
+
+    enderecoId Int
+    endereco   Endereco @relation(fields: [enderecoId], references: [id], onDelete: Cascade)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Promissoria {
+    id     Int @id @default(autoincrement())
+    numero Int
+    ano    Int
+
+    contractId Int      @unique
+    contract   Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([numero, ano])
+}
+
+enum EstadoCivil {
+    SOLTEIRO
+    CASADO
+    SEPARADO
+    DIVORCIADO
+    VIUVO
+}
+
+enum Inversor {
+    ABB
+    CANADIAN
+    DEYE
+    GROWATT
+}
