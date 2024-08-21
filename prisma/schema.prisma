@@ -65,7 +65,7 @@ model Plant {
 }
 
 model Contract {
-    id             Int         @id @default(autoincrement())
+    id             String      @id @default(uuid())
     nome           String
     email          String
     profissao      String
@@ -86,10 +86,10 @@ model Contract {
     potModulos     Float
     potInversor    Float
 
-    avalistaId Int?
+    avalistaId String?
     avalista   Avalista? @relation(fields: [avalistaId], references: [id])
 
-    enderecoId  Int
+    enderecoId  String
     endereco    Endereco      @relation(fields: [enderecoId], references: [id], onDelete: Cascade)
     Promissoria Promissoria[]
 
@@ -101,7 +101,7 @@ model Contract {
 }
 
 model Endereco {
-    id         Int    @id @default(autoincrement())
+    id         String @id @default(uuid())
     logradouro String
     numero     Int
     bairro     String
@@ -117,14 +117,14 @@ model Endereco {
 }
 
 model Avalista {
-    id        Int    @id @default(autoincrement())
+    id        String @id @default(uuid())
     nome      String
     profissao String
     cpf       String
 
     Contract Contract[]
 
-    enderecoId Int
+    enderecoId String
     endereco   Endereco @relation(fields: [enderecoId], references: [id], onDelete: Cascade)
 
     createdAt DateTime @default(now())
@@ -132,11 +132,11 @@ model Avalista {
 }
 
 model Promissoria {
-    id     Int @id @default(autoincrement())
+    id     String @id @default(uuid())
     numero Int
     ano    Int
 
-    contractId Int      @unique
+    contractId String   @unique
     contract   Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
 
     createdAt DateTime @default(now())
