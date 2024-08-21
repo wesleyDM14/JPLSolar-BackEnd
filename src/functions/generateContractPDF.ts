@@ -308,7 +308,6 @@ export async function generateContractPDF(contractId: string, dataCallback: any,
         doc.moveDown();
 
         const clauseStartX = 50;
-        const clauseNumberWidth = 40; // Largura para o número da cláusula
         const clauseIndent = 55; // Espaço entre o número e o texto
 
         // Adiciona o texto das cláusulas com recuo
