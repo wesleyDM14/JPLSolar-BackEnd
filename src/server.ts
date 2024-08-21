@@ -4,6 +4,7 @@ import 'express-async-errors';
 
 import { setupGracefulShutdown } from "./functions/shutdown";
 import prismaClient from "./prisma";
+import { router } from "./routes";
 
 const app = express();
 const PORT = process.env.PORT || 3333;
@@ -13,6 +14,9 @@ app.use(express.json());
 
 //Middleware para permitir solicitações de origens diferentes
 app.use(cors());
+
+//Middleware para registrar as rotas
+app.use('/api', router);
 
 //Middleware para tratamento de erros
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
