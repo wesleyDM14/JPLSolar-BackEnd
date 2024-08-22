@@ -92,13 +92,23 @@ function addTableWithColors(doc: InstanceType<typeof PDFDocument>, table: Table)
     });
 }
 
-export async function generateContractPDF(contractId: string, dataCallback: any, endCallback: any) {
+export async function generateContractPDF(contractId: string, userId: string, dataCallback: any, endCallback: any) {
     try {
+
+        const existingUser = await prismaClient.user.findUnique({ where: { id: userId } });
+
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
 
         const contractExisting = await prismaClient.contract.findFirst({ where: { id: contractId } });
 
         if (!contractExisting) {
             throw new Error('Contrato não encontrado no Banco de Dados.');
+        }
+
+        if (existingUser.id !== contractExisting.userId && !existingUser.isAdmin) {
+            throw new Error('Você não tem permissão para acessar esse contrato.');
         }
 
         const enderecoCliente = await prismaClient.endereco.findFirst({ where: { id: contractExisting.enderecoId } });

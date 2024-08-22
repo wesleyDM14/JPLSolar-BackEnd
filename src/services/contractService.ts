@@ -158,11 +158,21 @@ class ContractService {
     }
 
     //Read unique
-    async getContractById(contratoId: string) {
+    async getContractById(contratoId: string, userId: string) {
+        const userExisting = await prismaClient.user.findUnique({ where: { id: userId } });
+
+        if (!userExisting) {
+            throw new Error('Usuário não encontrado no Banco de Dados.');
+        }
+
         const contractExisting = await prismaClient.contract.findFirst({ where: { id: contratoId } });
 
         if (!contractExisting) {
             throw new Error('Contrato não encontrado no Banco de Dados.');
+        }
+
+        if (contractExisting.userId !== userExisting.id && !userExisting.isAdmin) {
+            throw new Error('Você não tem permissão para acessar este contrato.');
         }
 
         return contractExisting;
@@ -170,6 +180,7 @@ class ContractService {
 
     //Update
     async updateContract(
+        userId: string,
         contractId: string,
         nome: string,
         email: string,
@@ -207,6 +218,12 @@ class ContractService {
     ) {
         try {
             return await prismaClient.$transaction(async (prisma) => {
+
+                const userExisting = await prisma.user.findUnique({ where: { id: userId } });
+
+                if (!userExisting) {
+                    throw new Error('Usuário não encontrado no Banco de Dados.');
+                }
                 // Verificar se o contrato existe
                 const existingContract = await prisma.contract.findUnique({
                     where: { id: contractId },
@@ -215,6 +232,10 @@ class ContractService {
 
                 if (!existingContract) {
                     throw new Error('Contrato não encontrado.');
+                }
+
+                if (existingContract.userId !== userExisting.id && !userExisting.isAdmin) {
+                    throw new Error('Você não tem permissão para editar este contrato.');
                 }
 
                 // Atualizar endereço do contrato
@@ -304,11 +325,21 @@ class ContractService {
     }
 
     //Delete
-    async deleteContract(contractId: string) {
+    async deleteContract(contractId: string, userId: string) {
+        const userExisting = await prismaClient.user.findUnique({ where: { id: userId } });
+
+        if (!userExisting) {
+            throw new Error('Usuário não encontrado no Banco de Dados.');
+        }
+
         const contractExisting = await prismaClient.contract.findFirst({ where: { id: contractId } });
 
         if (!contractExisting) {
             throw new Error('Contrato não encontrado no Banco de Dados.');
+        }
+
+        if (contractExisting.userId !== userExisting.id && !userExisting.isAdmin) {
+            throw new Error('Você não tem permissão para acessar este contrato.');
         }
 
         let enderecoId = contractExisting.enderecoId;

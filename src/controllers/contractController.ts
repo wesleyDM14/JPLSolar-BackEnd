@@ -46,10 +46,6 @@ class ContractController {
                 cepAvalista,
             } = req.body;
 
-            if (!req.user.isAdmin) {
-                return res.status(403).json({ message: 'Apenas administradores podem cadastrar contratos.' });
-            }
-
             if (!nome || !email || !profissao || !estadoCivil || !dataNascimento || !cpf || !rg || !logradouro || (numero === null || numero === undefined) || !bairro || !cidade || !uf || !cep) {
                 return res.status(400).json({ message: 'Por favor, informe os dados pessoais do cliente corretamente.' });
             }
@@ -121,7 +117,7 @@ class ContractController {
                 return res.status(400).json({ message: 'ID de contrato não fornecido' });
             }
 
-            const contract = await contractService.getContractById(contractId);
+            const contract = await contractService.getContractById(contractId, req.user.id);
             return res.status(200).json(contract);
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -140,10 +136,6 @@ class ContractController {
 
             if (!contratoId) {
                 return res.status(400).json({ message: 'ID não fornecido.' });
-            }
-
-            if (!req.user.isAdmin) {
-                return res.status(403).json({ message: 'Apenas administradores podem atualizar contratos.' });
             }
 
             const {
@@ -198,7 +190,7 @@ class ContractController {
                 return res.status(400).json({ message: 'Por favor, informe os dados do avalista corretamente.' });
             }
 
-            const updatedContract = await contractService.updateContract(contratoId, nome, email, profissao, estadoCivil, dataNascimento, cpf, rg, dataContrato, carencia, dataPrimeiraParcela, quantParcelas, priceTotal, priceParcela, modeloModulos, potModulos, modeloInversor, potInversor, avalista, logradouro, numero, bairro, cidade, uf, cep, nomeAvalista, profissaoAvalista, cpfAvalista, logradouroAvalista, numeroAvalista, bairroAvalista, cidadeAvalista, ufAvalista, cepAvalista);
+            const updatedContract = await contractService.updateContract(req.user.id, contratoId, nome, email, profissao, estadoCivil, dataNascimento, cpf, rg, dataContrato, carencia, dataPrimeiraParcela, quantParcelas, priceTotal, priceParcela, modeloModulos, potModulos, modeloInversor, potInversor, avalista, logradouro, numero, bairro, cidade, uf, cep, nomeAvalista, profissaoAvalista, cpfAvalista, logradouroAvalista, numeroAvalista, bairroAvalista, cidadeAvalista, ufAvalista, cepAvalista);
 
             return res.status(200).json(updatedContract);
         } catch (error: unknown) {
@@ -220,11 +212,7 @@ class ContractController {
                 return res.status(400).json({ message: 'ID não fornecido.' });
             }
 
-            if (!req.user.isAdmin) {
-                return res.status(403).json({ message: 'Apenas administradores podem deletar contratos.' });
-            }
-
-            await contractService.deleteContract(contratoId);
+            await contractService.deleteContract(contratoId, req.user.id);
             return res.status(200).json({ message: 'Contrato deletado com sucesso.' });
 
         } catch (error: unknown) {
@@ -253,6 +241,7 @@ class ContractController {
 
             await generateContractPDF(
                 contractId,
+                req.user.id,
                 (data: any) => stream.write(data),
                 () => stream.end()
             );
@@ -283,6 +272,7 @@ class ContractController {
 
             await generatePromissoriaPDF(
                 contractId,
+                req.user.id,
                 (data: any) => stream.write(data),
                 () => stream.end()
             );

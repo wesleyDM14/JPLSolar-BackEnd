@@ -4,37 +4,27 @@ import prismaClient from "../prisma";
 class UserService {
 
     async createUser(name: string, login: string, password: string) {
-        try {
-            const existingUser = await prismaClient.user.findUnique({
-                where: {
-                    login: login,
-                }
-            });
-
-            if (existingUser) {
-                throw new Error('O login já está sendo usado por outro usuário.');
+        const existingUser = await prismaClient.user.findUnique({
+            where: {
+                login: login,
             }
+        });
 
-            const passwordHash = await hash(password, 8);
-
-            const newUser = await prismaClient.user.create({
-                data: {
-                    login: login,
-                    password: passwordHash,
-                    name: name ? name : null
-                }
-            });
-
-            return newUser;
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                console.error('Erro ao cadastrar o usuário: ' + error.message);
-                throw new Error('Erro ao cadastraro usuário: ' + error.message);
-            } else {
-                console.error('Erro ao cadastrar o usuário: Erro desconhecido');
-                throw new Error('Erro ao cadastraro usuário: Erro desconhecido');
-            }
+        if (existingUser) {
+            throw new Error('O login já está sendo usado por outro usuário.');
         }
+
+        const passwordHash = await hash(password, 8);
+
+        const newUser = await prismaClient.user.create({
+            data: {
+                login: login,
+                password: passwordHash,
+                name: name ? name : null
+            }
+        });
+
+        return newUser;
     }
 
     async getUsers() {
@@ -64,7 +54,7 @@ class UserService {
         await prismaClient.user.update({
             where: { id: userId },
             data: {
-                name: name ? name : null,
+                name: name ? name : existingUser.name,
                 password: passwordHash
             }
         });

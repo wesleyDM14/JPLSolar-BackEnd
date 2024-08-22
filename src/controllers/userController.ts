@@ -81,7 +81,13 @@ class UserController {
 
     async updateUser(req: Request, res: Response) {
         try {
+
+            const userId = req.params.userId;
             const { newPassword, confirmPassword, nome } = req.body;
+
+            if (req.user.id !== userId && !req.user.isAdmin) {
+                return res.status(403).json({ message: 'Você não possui autorização para alterar o usuário.' });
+            }
 
             if (!newPassword || !confirmPassword) {
                 return res.status(400).json({ message: 'As senhas são obrigatórias. ' });
@@ -89,7 +95,7 @@ class UserController {
 
             validatePassword(newPassword, confirmPassword);
 
-            await userService.updateUser(req.user.id, nome, newPassword);
+            await userService.updateUser(userId, nome, newPassword);
 
             return res.status(200).json({ message: 'Usuário Atualizado com sucesso.' });
         } catch (error: unknown) {

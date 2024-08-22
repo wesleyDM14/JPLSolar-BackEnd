@@ -4,13 +4,23 @@ import extenso from 'numero-por-extenso';
 import { formatDate } from './generateDateExtenso';
 import prismaClient from '../prisma';
 
-export async function generatePromissoriaPDF(contractId: string, dataCallback: any, endCallback: any) {
+export async function generatePromissoriaPDF(contractId: string, userId: string, dataCallback: any, endCallback: any) {
     try {
+
+        const existingUser = await prismaClient.user.findUnique({ where: { id: userId } });
+
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
 
         const contractExisting = await prismaClient.contract.findFirst({ where: { id: contractId } });
 
         if (!contractExisting) {
             throw new Error('Contrato não encontrado no Banco de Dados.');
+        }
+
+        if (existingUser.id !== contractExisting.userId && !existingUser.isAdmin) {
+            throw new Error('Você não tem permissão para acessar esse contrato.');
         }
 
         const promissoria = await prismaClient.promissoria.findFirst({ where: { contractId: contractId } });
