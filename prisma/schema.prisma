@@ -22,6 +22,7 @@ model User {
     //Relacionamentos
     clients   Client[]
     contracts Contract[]
+    Plant     Plant[]
 }
 
 model Client {
@@ -52,7 +53,7 @@ model Plant {
     installedPower      Float
     login               String
     password            String
-    code                String   @unique
+    code                String
     installationDate    DateTime
     estimatedGeneration Float
 
@@ -62,6 +63,11 @@ model Plant {
     //Relacionamento com a tabela cliente
     clientId String
     client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+    userId String
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([code, userId])
 }
 
 model Contract {

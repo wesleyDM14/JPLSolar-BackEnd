@@ -46,9 +46,34 @@ class ClientController {
         }
     }
 
-    async getClientsByUserId(req: Request, res: Response) {
+    async getSelfUserClients(req: Request, res: Response) {
         try {
             const clients = await clientService.getClientsByUserId(req.user.id);
+            return res.status(200).json(clients);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error('Erro acessar os clientes: ' + error.message);
+                res.status(500).json({ message: 'Erro acessar os clientes: ' + error.message });
+            } else {
+                console.error('Erro acessar os clientes: Erro desconhecido.');
+                res.status(500).json({ message: 'Erro acessar os clientes: Erro desconhecido.' });
+            }
+        }
+    }
+
+    async getClientsByUserId(req: Request, res: Response) {
+        try {
+            if (req.user.isAdmin) {
+                return res.status(403).json({ message: 'Somente administradores podem acessar os clientes.' });
+            }
+
+            const userId = req.params.userId;
+
+            if (!userId) {
+                return res.status(400).json({ message: 'ID de usuário não fornecido.' });
+            }
+
+            const clients = await clientService.getClientsByUserId(userId);
             return res.status(200).json(clients);
         } catch (error: unknown) {
             if (error instanceof Error) {

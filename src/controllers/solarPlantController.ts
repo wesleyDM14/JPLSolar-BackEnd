@@ -1,0 +1,214 @@
+import { Request, Response } from "express";
+
+import SolarPlantService from "../services/solarPlantService";
+
+const solarPlantService = new SolarPlantService();
+
+class SolarPlantController {
+
+    async createSolarPlant(req: Request, res: Response) {
+        try {
+            const {
+                code,
+                local,
+                installationDate,
+                inverter,
+                inverterPot,
+                panel,
+                panelPower,
+                numberPanel,
+                estimatedGeneration,
+                login,
+                password,
+                clientId
+            } = req.body;
+
+            if (!local || !installationDate) {
+                return res.status(400).json({ message: 'Dados Sobre a instalação da planta solar estão faltando.' });
+            }
+
+            if (!inverter || !panel || (inverterPot === null || inverterPot === undefined) || (panelPower === null || panelPower === undefined) || (numberPanel === null || numberPanel === undefined) || (estimatedGeneration === null || estimatedGeneration === undefined)) {
+                return res.status(400).json({ message: 'Dados Tecnicos sobre a planta solar estão faltando.' });
+            }
+
+            if (!code || !login || !password || !clientId) {
+                return res.status(400).json({ message: 'Dados sobre a Indentificação da planta solar estão faltando.' });
+            }
+
+            const newSolarPlant = await solarPlantService.createSolarPlant(code, local, installationDate, inverter, inverterPot, panel, panelPower, numberPanel, estimatedGeneration, login, password, clientId, req.user.id);
+
+            return res.status(201).json(newSolarPlant);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error('Erro ao cadastrar a planta solar: ' + error.message);
+                res.status(500).json({ message: 'Erro ao cadastrar a planta solar: ' + error.message });
+            } else {
+                console.error('Erro ao cadastrar a planta solar: Erro desconhecido.');
+                res.status(500).json({ message: 'Erro ao cadastrar a planta solar: Erro desconhecido.' });
+            }
+        }
+    }
+
+    async getSolarPlants(req: Request, res: Response) {
+        try {
+            if (!req.user.isAdmin) {
+                return res.status(403).json({ message: 'Apenas Administradores podem recuperar todos as plantas cadastradas.' });
+            }
+
+            const solarPlants = await solarPlantService.getSolarPlants();
+
+            return res.status(200).json(solarPlants);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error('Erro ao buscar as plantas solares: ' + error.message);
+                res.status(500).json({ message: 'Erro ao buscar as plantas solares: ' + error.message });
+            } else {
+                console.error('Erro ao buscar as plantas solares: Erro desconhecido.');
+                res.status(500).json({ message: 'Erro ao buscar as plantas solares: Erro desconhecido.' });
+            }
+        }
+    }
+
+    async getSelfSolarPlants(req: Request, res: Response) {
+        try {
+            const solarPlants = await solarPlantService.getSolarPlantsByUserId(req.user.id);
+            return res.status(200).json(solarPlants);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error('Erro ao buscar as plantas solares: ' + error.message);
+                res.status(500).json({ message: 'Erro ao buscar as plantas solares: ' + error.message });
+            } else {
+                console.error('Erro ao buscar as plantas solares: Erro desconhecido.');
+                res.status(500).json({ message: 'Erro ao buscar as plantas solares: Erro desconhecido.' });
+            }
+        }
+    }
+
+    async getSolarPlantsByUserId(req: Request, res: Response) {
+        try {
+            if (req.user.isAdmin) {
+                return res.status(403).json({ message: 'Somente administradores podem acessar as plantas solares.' });
+            }
+
+            const userId = req.params.userId;
+
+            if (!userId) {
+                return res.status(400).json({ message: 'Id de usuário não fornecido.' });
+            }
+
+            const solarPlants = await solarPlantService.getSolarPlantsByUserId(userId);
+            return res.status(200).json(solarPlants);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error('Erro ao buscar as plantas solares: ' + error.message);
+                res.status(500).json({ message: 'Erro ao buscar as plantas solares: ' + error.message });
+            } else {
+                console.error('Erro ao buscar as plantas solares: Erro desconhecido.');
+                res.status(500).json({ message: 'Erro ao buscar as plantas solares: Erro desconhecido.' });
+            }
+        }
+    }
+
+    async getSolarPlantsByClientId(req: Request, res: Response) {
+        try {
+            const clientId = req.params.clientId;
+
+            if (!clientId) {
+                return res.status(400).json({ message: 'Id de cliente não fornecido.' });
+            }
+
+            const solarPlants = await solarPlantService.getSolarPlantsByClientId(clientId, req.user.id);
+            return res.status(200).json(solarPlants);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error('Erro ao buscar as plantas solares: ' + error.message);
+                res.status(500).json({ message: 'Erro ao buscar as plantas solares: ' + error.message });
+            } else {
+                console.error('Erro ao buscar as plantas solares: Erro desconhecido.');
+                res.status(500).json({ message: 'Erro ao buscar as plantas solares: Erro desconhecido.' });
+            }
+        }
+    }
+
+    async getSolarPlantById(req: Request, res: Response) {
+        try {
+            const solarPlantId = req.params.solarPlantId;
+
+            if (!solarPlantId) {
+                return res.status(400).json({ message: 'Id de planta solar não fornecido.' });
+            }
+
+            const solarPlants = await solarPlantService.getSolarPlantById(solarPlantId, req.user.id);
+            return res.status(200).json(solarPlants);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error('Erro ao buscar a planta solare: ' + error.message);
+                res.status(500).json({ message: 'Erro ao buscar a planta solare: ' + error.message });
+            } else {
+                console.error('Erro ao buscar a planta solare: Erro desconhecido.');
+                res.status(500).json({ message: 'Erro ao buscar a planta solare: Erro desconhecido.' });
+            }
+        }
+    }
+
+    async updateSolarPlant(req: Request, res: Response) {
+        try {
+            const solarPlantId = req.params.solarPlantId;
+
+            if (!solarPlantId) {
+                return res.status(400).json({ message: 'Id de planta solar não fornecido.' });
+            }
+
+            const {
+                code,
+                local,
+                installedPower,
+                installationDate,
+                inverter,
+                inverterPot,
+                panel,
+                panelPower,
+                numberPanel,
+                estimatedGeneration,
+                login,
+                password
+            } = req.body;
+
+            await solarPlantService.updateSolarPlant(code, installedPower, local, installationDate, inverter, inverterPot, panel, panelPower, numberPanel, estimatedGeneration, login, password, solarPlantId, req.user.id);
+
+            return res.status(200).json({ message: 'Planta Solar atualizada com sucesso.' });
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error('Erro ao atualizar a planta solar: ' + error.message);
+                res.status(500).json({ message: 'Erro ao atualizar a planta solar: ' + error.message });
+            } else {
+                console.error('Erro ao atualziar a planta solar: Erro desconhecido.');
+                res.status(500).json({ message: 'Erro ao atualizar a planta solar: Erro desconhecido.' });
+            }
+        }
+    }
+
+    async deleteSolarPlant(req: Request, res: Response) {
+        try {
+            const solarPlantId = req.params.solarPlantId;
+
+            if (!solarPlantId) {
+                return res.status(400).json({ message: 'Id de planta solar não fornecido.' });
+            }
+
+            await solarPlantService.deleteSolarPlant(solarPlantId, req.user.id);
+
+            return res.status(200).json({ message: 'Planta Solar deletada com sucesso.' });
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error('Erro ao deletar a planta solar: ' + error.message);
+                res.status(500).json({ message: 'Erro ao deletar a planta solar: ' + error.message });
+            } else {
+                console.error('Erro ao deletar a planta solar: Erro desconhecido.');
+                res.status(500).json({ message: 'Erro ao deletar a planta solar: Erro desconhecido.' });
+            }
+        }
+    }
+}
+
+export default SolarPlantController;

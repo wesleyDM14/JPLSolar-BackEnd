@@ -94,9 +94,34 @@ class ContractController {
         }
     }
 
-    async getContractsByUser(req: Request, res: Response) {
+    async getSelfUserContracts(req: Request, res: Response) {
         try {
             const contracts = await contractService.getContractsByUser(req.user.id);
+            return res.status(200).json(contracts);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error('Erro ao pegar todos os contratos do usuário: ' + error.message);
+                res.status(500).json({ message: 'Erro ao pegar todos os contratos do usuário: ' + error.message });
+            } else {
+                console.error('Erro ao pegar todos os contratos do usuário: Erro desconhecido.');
+                res.status(500).json({ message: 'Erro ao pegar todos os contratos do usuário: Erro desconhecido.' });
+            }
+        }
+    }
+
+    async getContractsByUser(req: Request, res: Response) {
+        try {
+            if (req.user.isAdmin) {
+                return res.status(403).json({ message: 'Somente administradores podem acessar os clientes.' });
+            }
+
+            const userId = req.params.userId;
+
+            if (!userId) {
+                return res.status(400).json({ message: 'ID de usuário não fornecido.' });
+            }
+
+            const contracts = await contractService.getContractsByUser(userId);
             return res.status(200).json(contracts);
         } catch (error: unknown) {
             if (error instanceof Error) {
