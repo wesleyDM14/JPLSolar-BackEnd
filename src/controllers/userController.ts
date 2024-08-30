@@ -7,6 +7,28 @@ const userService = new UserService();
 
 class UserController {
 
+    async authenticateUser(req: Request, res: Response) {
+        try {
+            const { login, password } = req.body;
+
+            if (!login || !password) {
+                return res.status(400).json({ message: 'Login e Senha são obrigatórios' });
+            }
+
+            const accessToken = await userService.authenticateUser(login, password);
+
+            return res.status(200).json({ accessToken });
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error('Erro ao autenticar o usuário: ' + error.message);
+                res.status(500).json({ message: 'Erro ao autenticar o usuário: ' + error.message });
+            } else {
+                console.error('Erro ao autenticar o usuário: Erro desconhecido.');
+                res.status(500).json({ message: 'Erro ao autenticar o usuário: Erro desconhecido.' });
+            }
+        }
+    }
+
     async createUser(req: Request, res: Response) {
         try {
             const { nome, login, password, confirmPassword } = req.body;

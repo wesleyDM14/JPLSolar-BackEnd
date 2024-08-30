@@ -14,6 +14,7 @@ const solarPlantController = new SolarPlantController();
 const contractController = new ContractController();
 
 //CRUD para Usuário
+router.post('/login', userController.authenticateUser.bind(userController));
 router.post('/usuarios', authenticateUser, IsAdminUser, userController.createUser.bind(userController));
 router.get('/usuarios', authenticateUser, IsAdminUser, userController.getUsers.bind(userController));
 router.get('/usuarios/:userId', authenticateUser, userController.getUserById.bind(userController));
