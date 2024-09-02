@@ -10,6 +10,12 @@ function calcularDataUltimaParcela(dataPrimeiraParcela: Date, quantidadeParcelas
     return addMonths(dataPrimeiraParcela, quantidadeParcelas - 1);
 }
 
+const formatadorMoeda = new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 2
+});
+
 function addTableWithColors(doc: InstanceType<typeof PDFDocument>, table: Table): void {
     let startX = 50; // Posição X inicial
     let startY = doc.y; // Posição Y inicial
@@ -123,6 +129,35 @@ export async function generateContractPDF(contractId: string, userId: string, da
             }
         }
 
+        const valorTotal = formatadorMoeda.format(contractExisting.priceTotal);
+        const valorParcela = formatadorMoeda.format(contractExisting.priceParcela);
+
+        const dataContrato = new Date(contractExisting.dataContrato).toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+
+        const dataPrimeiraParcela = new Date(contractExisting.dataPrimeiraParcela).toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+
+        const dataFinal = calcularDataUltimaParcela(new Date(contractExisting.dataPrimeiraParcela), contractExisting.quantParcelas);
+
+        const dataUltimaParcela = new Date(dataFinal).toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+
+        const dataNascimento = new Date(contractExisting.dataNascimento).toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+
         const doc = new PDFDocument({
             size: 'A4',
             margins: { top: 50, left: 60, right: 60, bottom: 50 }
@@ -150,16 +185,14 @@ export async function generateContractPDF(contractId: string, userId: string, da
         doc.font('Helvetica-Bold').text('CLÁUSULA 1º - ', { continued: true, align: 'justify' });
         doc.font('Helvetica').text(` Que o `, { continued: true, align: 'justify' });
         doc.font('Helvetica-Bold').text(' COMPRADOR ', { continued: true, align: 'justify' });
-        doc.font('Helvetica').text(` adquire nesta Data de ${new Date(contractExisting.dataContrato).toLocaleDateString()}, um sistema fotovoltaico de ${contractExisting.potModulos}kWp de potência com módulos fotovoltaicos ${contractExisting.modeloModulos}, ${contractExisting.potInversor}kW de inversor ${contractExisting.modeloInversor} e estrutura de fixação pela quantia de `, { continued: true, align: 'justify' });
-        doc.font('Helvetica-Bold').text(` R$ ${contractExisting.priceTotal.toFixed(2)} (${extenso(contractExisting.priceTotal, { estilo: 'monetario' }).toUpperCase()}).`, { align: 'justify' });
+        doc.font('Helvetica').text(` adquire nesta Data de ${dataContrato}, um sistema fotovoltaico de ${contractExisting.potModulos}kWp de potência com módulos fotovoltaicos ${contractExisting.modeloModulos}, ${contractExisting.potInversor}kW de inversor ${contractExisting.modeloInversor} e estrutura de fixação pela quantia de `, { continued: true, align: 'justify' });
+        doc.font('Helvetica-Bold').text(` ${valorTotal} (${extenso(contractExisting.priceTotal, { estilo: 'monetario' }).toUpperCase()}).`, { align: 'justify' });
         doc.moveDown();
         doc.font('Helvetica-Bold').text('CLÁUSULA 2º - ', { continued: true, align: 'justify' });
         doc.font('Helvetica').text(` Que para pagamento da quantia mencionada, correspondente ao valor do bem adquirido pelo comprador, esse assume o compromisso de efetuar o pagamento de ${contractExisting.quantParcelas} parcelas mensais e consecutivas de `, { continued: true, align: 'justify' });
-        doc.font('Helvetica-Bold').text(` R$ ${contractExisting.priceParcela} (${extenso(contractExisting.priceParcela, { estilo: 'monetario' }).toUpperCase()}) `, { continued: true, align: 'justify' });
+        doc.font('Helvetica-Bold').text(` ${valorParcela} (${extenso(contractExisting.priceParcela, { estilo: 'monetario' }).toUpperCase()}) `, { continued: true, align: 'justify' });
 
-        const dataFinal = calcularDataUltimaParcela(new Date(contractExisting.dataPrimeiraParcela), contractExisting.quantParcelas);
-
-        doc.font('Helvetica').text(` a vencer a primeira em ${new Date(contractExisting.dataPrimeiraParcela).toLocaleDateString()} e a última em ${dataFinal.toLocaleDateString()}, representado por boletos bancários que serão enviados pela `, { continued: true, align: 'justify' });
+        doc.font('Helvetica').text(` a vencer a primeira em ${dataPrimeiraParcela} e a última em ${dataUltimaParcela}, representado por boletos bancários que serão enviados pela `, { continued: true, align: 'justify' });
         doc.font('Helvetica-Bold').text(' VENDEDORA ', { continued: true, align: 'justify' });
         doc.font('Helvetica').text(` ao `, { continued: true, align: 'justify' });
         doc.font('Helvetica-Bold').text(' COMPRADOR ', { continued: true, align: 'justify' });
@@ -183,7 +216,7 @@ export async function generateContractPDF(contractId: string, userId: string, da
         doc.moveDown();
 
         doc.font('Helvetica-Bold').text('CLÁUSULA 5º - ', { continued: true, align: 'justify' });
-        doc.font('Helvetica').text(` Que nesta DATA ${new Date(contractExisting.dataContrato).toLocaleDateString()} o `, { continued: true, align: 'justify' });
+        doc.font('Helvetica').text(` Que nesta DATA ${dataContrato} o `, { continued: true, align: 'justify' });
         doc.font('Helvetica-Bold').text(' COMPRADOR ', { continued: true, align: 'justify' });
         doc.font('Helvetica').text(` emite em favor da credora uma nota promissória no valor total da dívida, podendo ocorrer o protesto em caso de inadimplemento de três prestações, que serão objeto de protesto ou notificação para constituição em mora do devedor.`, { align: 'justify' });
         doc.moveDown();
@@ -227,7 +260,7 @@ export async function generateContractPDF(contractId: string, userId: string, da
         doc.moveDown();
         doc.moveDown();
 
-        doc.text(`São Miguel - RN, ${new Date(contractExisting.dataContrato).toLocaleDateString()} `, { align: 'justify' });
+        doc.text(`São Miguel - RN, ${dataContrato} `, { align: 'justify' });
         doc.moveDown();
         doc.moveDown();
         doc.moveDown();
@@ -280,7 +313,7 @@ export async function generateContractPDF(contractId: string, userId: string, da
             addTableWithColors(doc, [
                 ['1. COMPRADOR'],
                 [`Devedor: ${contractExisting.nome.toUpperCase()}`, `CPF: ${contractExisting.cpf}`],
-                [`Data de Nascimento: ${new Date(contractExisting.dataNascimento).toLocaleDateString()}`, `E-mail: ${contractExisting.email}`],
+                [`Data de Nascimento: ${dataNascimento}`, `E-mail: ${contractExisting.email}`],
                 [`Logradouro: ${enderecoCliente.logradouro}`, `Número: ${enderecoCliente.numero}`],
                 [`Bairro: ${enderecoCliente.bairro}`, `Cidade: ${enderecoCliente.cidade}`],
                 [`UF: ${enderecoCliente.uf}`, `CEP: ${enderecoCliente.cep}`],
@@ -290,12 +323,12 @@ export async function generateContractPDF(contractId: string, userId: string, da
                 ['3. VENDEDORA'],
                 ['GURGEL AZEVEDO E TEÓFILO SERVIÇOS DE ENGENHARIA LTDA, empresa de direito privado, inscrita no CNPJ sob o n°33.651.184/0001-09 e com Sede na Rua Nikola Tesla, 189, Maria Manoela, São Miguel -RN, 59.920-000'],
                 ['4. CARACTERÍSTICAS DA VENDA E CONDIÇÕES DE PAGAMENTO'],
-                [`4.1. Valor da venda: ${contractExisting.priceTotal.toFixed(2)}`, `4.2. Valor do IOF: R$0,00`],
-                ['4.3. Valor da TC: R$ 0,00', `4.4. Valor total da venda: R$ ${contractExisting.priceTotal.toFixed(2)}`],
+                [`4.1. Valor da venda: ${valorTotal}`, `4.2. Valor do IOF: R$0,00`],
+                ['4.3. Valor da TC: R$ 0,00', `4.4. Valor total da venda: ${valorTotal}`],
                 [`4.5. Data da emissão e desembolso: ${new Date(contractExisting.dataContrato).toLocaleDateString()}`, '4.6. Praça de Pagamento: São Miguel-RN'],
-                [`4.7. Quantidade de parcelas: ${contractExisting.quantParcelas}`, `4.8. Valor da Parcela: R$ ${contractExisting.priceParcela.toFixed(2)}`],
-                [`4.9. Período de carência: ${contractExisting.carencia} dias`, `4.10. Vencimento da primeira parcela: ${new Date(contractExisting.dataPrimeiraParcela).toLocaleDateString()}`],
-                [`4.11. Vencimento das Parcelas: Dia ${new Date(contractExisting.dataPrimeiraParcela).getDate()}`, `4.12. Vencimento da última parcela: ${dataFinal.toLocaleDateString()}`],
+                [`4.7. Quantidade de parcelas: ${contractExisting.quantParcelas}`, `4.8. Valor da Parcela: ${valorParcela}`],
+                [`4.9. Período de carência: ${contractExisting.carencia} dias`, `4.10. Vencimento da primeira parcela: ${dataPrimeiraParcela}`],
+                [`4.11. Vencimento das Parcelas: Dia ${new Date(contractExisting.dataPrimeiraParcela).getDate()}`, `4.12. Vencimento da última parcela: ${dataUltimaParcela}`],
                 ['4.13. Taxa pré-fixada de juros a.m. (%): 1,69', '4.14. Taxa pré-fixada de juros a.a.(%): 20,28'],
                 ['4.15. Forma de Pagamento das Parcelas: Boleto', ''],
                 ['4.16. Atualização Monetária: As parcelas do empréstimo não serão objetos de atualização monetária.'],
@@ -314,7 +347,7 @@ export async function generateContractPDF(contractId: string, userId: string, da
 
         doc.font('Helvetica').text(`Eu, ${contractExisting.nome}, Portador do RG n° ${contractExisting.rg} e inscrito no CPF n° ${contractExisting.cpf}`, { continued: true, align: 'justify' });
         doc.font('Helvetica-Bold').text(' ("COMPRADOR") ', { continued: true, align: 'justify' });
-        doc.font('Helvetica').text(`do sistema de energia solar fotovoltaica de ${contractExisting.potModulos}kWp de Potência, de contrato emitido ${new Date(contractExisting.dataContrato).toLocaleDateString()} no valor de R$ ${contractExisting.priceTotal.toFixed(2)}, da empresa Gurgel Azevedo e Teófilo Serviços de Engenharia LTDA, inscrita no CNPJ 33.651.184/0001-09, vem pelo presente documento declarar que:`, { align: 'justify' });
+        doc.font('Helvetica').text(`do sistema de energia solar fotovoltaica de ${contractExisting.potModulos}kWp de Potência, de contrato emitido ${dataContrato} no valor de ${valorTotal}, da empresa Gurgel Azevedo e Teófilo Serviços de Engenharia LTDA, inscrita no CNPJ 33.651.184/0001-09, vem pelo presente documento declarar que:`, { align: 'justify' });
         doc.moveDown();
 
         const clauseStartX = 50;
@@ -364,7 +397,7 @@ export async function generateContractPDF(contractId: string, userId: string, da
         doc.text('Atenciosamente, ', { align: 'justify' });
         doc.moveDown();
 
-        doc.text(`São Miguel - RN ${new Date(contractExisting.dataContrato).toLocaleDateString()}:`, { align: 'justify' });
+        doc.text(`São Miguel - RN ${dataContrato}:`, { align: 'justify' });
         doc.moveDown();
         doc.moveDown();
         doc.moveDown();
