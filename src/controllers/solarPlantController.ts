@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 
 import SolarPlantService from "../services/solarPlantService";
+import { Inversor } from "@prisma/client";
 
 const solarPlantService = new SolarPlantService();
 
@@ -206,6 +207,44 @@ class SolarPlantController {
             } else {
                 console.error('Erro ao deletar a planta solar: Erro desconhecido.');
                 res.status(500).json({ message: 'Erro ao deletar a planta solar: Erro desconhecido.' });
+            }
+        }
+    }
+
+    async getSolarPlantParams(req: Request, res: Response) {
+        try {
+            const { login, password, inverter, plantUserId } = req.params;
+
+            if (!login || !password || !inverter || !plantUserId) {
+                return res.status(400).json({ message: 'Parâmetros da url estão faltando.' });
+            }
+
+            if (!req.user.isAdmin && plantUserId !== req.user.id) {
+                return res.status(403).json({ error: 'Acesso negado: Planta Solar não pertence ao usuário.' });
+            }
+
+            let response = null;
+
+            if (inverter === Inversor.ABB) {
+                response = await solarPlantService.getAbbParams(login, password);
+            } else if (inverter === Inversor.CANADIAN) {
+                response = await solarPlantService.getCanadianParams(login, password);
+            } else if (inverter === Inversor.DEYE) {
+                response = await solarPlantService.getDeyeParams(login, password);
+            } else if (inverter === Inversor.GROWATT) {
+                response = await solarPlantService.getGrowattParams(login, password);
+            } else {
+                return res.status(400).json({ message: 'inversor não suportado na API.' });
+            }
+            
+            return res.status(200).json(response);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error('Erro ao pegar parametros individuais da planta solar: ' + error.message);
+                res.status(500).json({ message: 'Erro ao pegar parametros individuais da planta solar: ' + error.message });
+            } else {
+                console.error('Erro ao pegar parametros individuais da planta solar: Erro desconhecido.');
+                res.status(500).json({ message: 'Erro ao pegar parametros individuais da planta solar: Erro desconhecido.' });
             }
         }
     }

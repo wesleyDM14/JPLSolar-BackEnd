@@ -172,6 +172,22 @@ class SolarPlantService {
 
         return;
     }
+
+    async getAbbParams(login: string, password: string) {
+
+    }
+
+    async getCanadianParams(login: string, password: string) {
+
+    }
+
+    async getDeyeParams(login: string, password: string) {
+
+    }
+
+    async getGrowattParams(login: string, password: string) {
+
+    }
 }
 
 export default SolarPlantService;
