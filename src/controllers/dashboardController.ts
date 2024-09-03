@@ -23,10 +23,14 @@ class DashboardController {
 
     async getGeneralSolarPlantData(req: Request, res: Response) {
         try {
-            const { login, password, inverter, clientName, solarPlantCode, clientId, plantId } = req.params;
+            const { login, password, inverter, clientName, solarPlantCode, clientId, plantId, plantUserId } = req.params;
 
-            if (!login || !password || !inverter || !clientName || !solarPlantCode || !clientId || !plantId) {
+            if (!login || !password || !inverter || !clientName || !solarPlantCode || !clientId || !plantId || !plantUserId) {
                 return res.status(400).json({ message: 'Parâmetros da url estão faltando.' });
+            }
+
+            if (!req.user.isAdmin && plantUserId !== req.user.id) {
+                return res.status(403).json({ error: 'Acesso negado: Planta Solar não pertence ao usuário.' });
             }
 
             let response = {

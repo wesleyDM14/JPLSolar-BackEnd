@@ -55,6 +55,6 @@ router.delete('/contratos/:contractId', authenticateUser, contractController.del
 
 //rotas para dashboard
 router.get('/dashboardData', authenticateUser, dashboardController.getDashboardData.bind(dashboardController));
-router.get('/dashboard/solarPlants/statUs/:login/:password/:inverter/:clientName/:solarPlantCode/:clientId/:plantId', authenticateUser, dashboardController.getGeneralSolarPlantData.bind(dashboardController));
+router.get('/dashboard/solarPlants/statUs/:login/:password/:inverter/:clientName/:solarPlantCode/:clientId/:plantId/:plantUserId', authenticateUser, dashboardController.getGeneralSolarPlantData.bind(dashboardController));
 
 export { router };
