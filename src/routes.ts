@@ -6,12 +6,14 @@ import UserController from "./controllers/userController";
 import ClientController from "./controllers/clientController";
 import ContractController from "./controllers/contractController";
 import SolarPlantController from "./controllers/solarPlantController";
+import DashboardController from "./controllers/dashboardController";
 
 const router = Router();
 const userController = new UserController();
 const clientController = new ClientController();
 const solarPlantController = new SolarPlantController();
 const contractController = new ContractController();
+const dashboardController = new DashboardController();
 
 //CRUD para Usuário
 router.post('/login', userController.authenticateUser.bind(userController));
@@ -50,5 +52,9 @@ router.get('/contratos/:contractId/pdf', authenticateUser, contractController.ge
 router.get('/contratos/:contractId/promissoria/pdf', authenticateUser, contractController.generatePromissoriaPDF.bind(contractController));
 router.put('/contratos/:contractId', authenticateUser, contractController.updateContract.bind(contractController));
 router.delete('/contratos/:contractId', authenticateUser, contractController.deleteContract.bind(contractController));
+
+//rotas para dashboard
+router.get('/dashboardData', authenticateUser, dashboardController.getDashboardData.bind(dashboardController));
+router.get('/dashboard/solarPlants/statUs/:login/:password/:inverter/:clientName/:solarPlantCode/:clientId/:plantId', authenticateUser, dashboardController.getGeneralSolarPlantData.bind(dashboardController));
 
 export { router };

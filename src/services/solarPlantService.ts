@@ -169,7 +169,7 @@ class SolarPlantService {
         }
 
         await prismaClient.plant.delete({ where: { id: existingSolarPlant.id } });
-        
+
         return;
     }
 }
