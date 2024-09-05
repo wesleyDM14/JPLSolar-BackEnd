@@ -58,6 +58,8 @@ model Plant {
     code                String
     installationDate    DateTime
     estimatedGeneration Float
+    status              String?
+    eTotal              Float?
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

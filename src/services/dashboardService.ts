@@ -31,31 +31,6 @@ class DashboardService {
         return plantData;
     }
 
-    async getDashBoardData(userId: string) {
-        const plants = await prismaClient.plant.findMany({
-            where: { userId },
-        });
-
-        const plantsCount = plants.length;
-
-        const totalPowerInstalled = plants.reduce((total, plant) => total + plant.installedPower, 0);
-
-        const formatPower = (power: number) => {
-            if (power >= 1e6) {
-                return (power / 1e6).toFixed(2) + ' MWp';
-            } else if (power >= 1e3) {
-                return (power / 1e3).toFixed(2) + ' KWp';
-            } else {
-                return power.toFixed(2) + ' Wp';
-            }
-        };
-
-        return {
-            totalPlant: plantsCount,
-            totalPowerInstalled: formatPower(totalPowerInstalled),
-        }
-    }
-
     async getGrowattData(login: string, password: string) {
         try {
             const plantData = await this.fetchPlantData(login, password);
@@ -168,6 +143,43 @@ class DashboardService {
             };
         } catch (error) {
             throw new Error(`Erro to get Canadian Data: ${login} - ${error}`);
+        }
+    }
+
+    async getDashBoardData(userId: string) {
+        const plants = await prismaClient.plant.findMany({
+            where: { userId },
+            include: {
+                client: true,
+            }
+        });
+
+        const formattedPlants = plants.map(plant => ({
+            id: plant.id,
+            status: plant.status,
+            eTotal: plant.eTotal,
+            clientName: plant.client.name,
+            solarPlantCode: plant.code,
+        }))
+
+        const plantsCount = plants.length;
+
+        const totalPowerInstalled = plants.reduce((total, plant) => total + plant.installedPower, 0);
+
+        const formatPower = (power: number) => {
+            if (power >= 1e6) {
+                return (power / 1e6).toFixed(2) + ' MWp';
+            } else if (power >= 1e3) {
+                return (power / 1e3).toFixed(2) + ' KWp';
+            } else {
+                return power.toFixed(2) + ' Wp';
+            }
+        };
+
+        return {
+            totalPlant: plantsCount,
+            totalPowerInstalled: formatPower(totalPowerInstalled),
+            plants: formattedPlants,
         }
     }
 

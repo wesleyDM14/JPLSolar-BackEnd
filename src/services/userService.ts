@@ -72,7 +72,7 @@ class UserService {
             data: {
                 login: login,
                 password: passwordHash,
-                name: name ? name : null
+                name: name ? name : null,
             }
         });
 
