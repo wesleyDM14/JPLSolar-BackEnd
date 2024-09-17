@@ -7,6 +7,7 @@ import ClientController from "./controllers/clientController";
 import ContractController from "./controllers/contractController";
 import SolarPlantController from "./controllers/solarPlantController";
 import DashboardController from "./controllers/dashboardController";
+import WarningController from "./controllers/warningController";
 
 const router = Router();
 const userController = new UserController();
@@ -14,6 +15,7 @@ const clientController = new ClientController();
 const solarPlantController = new SolarPlantController();
 const contractController = new ContractController();
 const dashboardController = new DashboardController();
+const warningController = new WarningController();
 
 //CRUD para Usuário
 router.post('/login', userController.authenticateUser.bind(userController));
@@ -54,7 +56,16 @@ router.get('/contratos/:contractId/promissoria/pdf', authenticateUser, contractC
 router.put('/contratos/:contractId', authenticateUser, contractController.updateContract.bind(contractController));
 router.delete('/contratos/:contractId', authenticateUser, contractController.deleteContract.bind(contractController));
 
-//rotas para dashboard
+//rotas para Dashboard
 router.get('/dashboardData', authenticateUser, dashboardController.getDashboardData.bind(dashboardController));
+
+//rotas para Avisos
+router.post('/avisos', authenticateUser, IsAdminUser, warningController.createWarning.bind(warningController));
+router.get('/avisos', authenticateUser, IsAdminUser, warningController.getWarnings.bind(warningController));
+router.get('/users/:userId/warnings', authenticateUser, warningController.getWarningByUserId.bind(warningController));
+router.get('/myWarnings', authenticateUser, warningController.getWarningByUserLoggedIn.bind(warningController));
+router.get('/avisos/:warningId', authenticateUser, warningController.getWarningById.bind(warningController));
+router.put('/avisos/:warningId', authenticateUser, warningController.updateWarning.bind(warningController));
+router.delete('/avisos/:warningId', authenticateUser, warningController.deleteWarning.bind(warningController));
 
 export { router };
