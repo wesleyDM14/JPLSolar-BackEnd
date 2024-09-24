@@ -22,6 +22,7 @@ router.post('/login', userController.authenticateUser.bind(userController));
 router.post('/usuarios', authenticateUser, IsAdminUser, userController.createUser.bind(userController));
 router.get('/usuarios', authenticateUser, IsAdminUser, userController.getUsers.bind(userController));
 router.get('/usuarios/:userId', authenticateUser, userController.getUserById.bind(userController));
+router.get('/meu-perfil', authenticateUser, userController.getUserLoggedIn.bind(userController));
 router.put('/usuarios/:userId', authenticateUser, userController.updateUser.bind(userController));
 router.delete('/usuarios/:userId', authenticateUser, IsAdminUser, userController.deleteUser.bind(userController));
 

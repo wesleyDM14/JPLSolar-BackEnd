@@ -85,7 +85,15 @@ class UserService {
     }
 
     async getUserById(userId: string) {
-        const existingUser = await prismaClient.user.findUnique({ where: { id: userId } });
+        const existingUser = await prismaClient.user.findUnique({ 
+            where: { id: userId },
+            select: {
+                id: true,
+                isAdmin: true,
+                name: true,
+                login: true,
+            } 
+        });
 
         if (!existingUser) {
             throw new Error('Usuário não encontrado no banco de dados.');

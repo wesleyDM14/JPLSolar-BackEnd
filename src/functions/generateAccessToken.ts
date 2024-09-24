@@ -7,5 +7,5 @@ export const generateAccessToken = (userId: string): string => {
         throw new Error('JWT_SECRET is not defined in environment variables.');
     }
 
-    return sign({ id: userId }, secret);
+    return sign({ id: userId }, secret, { expiresIn: '30d' });
 }

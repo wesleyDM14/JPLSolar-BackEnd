@@ -2,7 +2,7 @@ import prismaClient from "../prisma";
 
 class ClientService {
 
-    async createClient(name: string, contact: string, address: string, userId: string) {
+    async createClient(name: string, phone: string, address: string, userId: string) {
         const existingUser = await prismaClient.user.findUnique({ where: { id: userId } });
 
         if (!existingUser) {
@@ -12,7 +12,7 @@ class ClientService {
         const newClient = await prismaClient.client.create({
             data: {
                 name: name,
-                phone: contact ? contact : null,
+                phone: phone ? phone : null,
                 address: address ? address : null,
                 userId: existingUser.id
             }
@@ -33,7 +33,7 @@ class ClientService {
             throw new Error('Usuário não encontrado no banco de dados.');
         }
 
-        const clients = await prismaClient.client.findMany({ where: { userId: existingUser.id } });
+        const clients = await prismaClient.client.findMany({ where: { userId: existingUser.id }, orderBy: {name: "asc"} });
         return clients;
     }
 
@@ -57,7 +57,7 @@ class ClientService {
         return existingClient;
     }
 
-    async updateClient(clientId: string, userId: string, nome: string, contact: string, address: string) {
+    async updateClient(clientId: string, userId: string, nome: string, phone: string, address: string) {
         const existingUser = await prismaClient.user.findUnique({ where: { id: userId } });
 
         if (!existingUser) {
@@ -79,7 +79,7 @@ class ClientService {
             data: {
                 name: nome ? nome : existingClient.name,
                 address: address ? address : existingClient.address,
-                phone: contact ? contact : existingClient.phone
+                phone: phone ? phone : existingClient.phone
             }
         });
 

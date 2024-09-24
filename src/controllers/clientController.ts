@@ -8,13 +8,13 @@ class ClientController {
 
     async createClient(req: Request, res: Response) {
         try {
-            const { name, contact, address } = req.body;
+            const { name, phone, address } = req.body;
 
             if (!name) {
                 return res.status(400).json({ message: 'Nome de Cliente é obrigatório.' });
             }
 
-            const newClient = await clientService.createClient(name, contact, address, req.user.id);
+            const newClient = await clientService.createClient(name, phone, address, req.user.id);
             return res.status(201).json(newClient);
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -115,13 +115,13 @@ class ClientController {
                 return res.status(400).json({ message: 'ID não fornecido.' });
             }
 
-            const { name, contact, address } = req.body;
+            const { name, phone, address } = req.body;
 
             if (!name) {
                 return res.status(400).json({ message: 'Nome de Cliente é obrigatório.' });
             }
 
-            await clientService.updateClient(clientId, req.user.id, name, contact, address);
+            await clientService.updateClient(clientId, req.user.id, name, phone, address);
             return res.status(200).json({ message: 'Cliente atualizado com sucesso.' });
         } catch (error: unknown) {
             if (error instanceof Error) {

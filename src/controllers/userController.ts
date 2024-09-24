@@ -101,6 +101,21 @@ class UserController {
         }
     }
 
+    async getUserLoggedIn(req: Request, res: Response) {
+        try {
+            const user = await userService.getUserById(req.user.id);
+            return res.status(200).json(user);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error('Erro ao buscar o usuário: ' + error.message);
+                res.status(500).json({ message: 'Erro ao busca o usuário: ' + error.message });
+            } else {
+                console.error('Erro ao buscar o usuário: Erro desconhecido.');
+                res.status(500).json({ message: 'Erro ao buscar o usuário: Erro desconhecido.' });
+            }
+        }
+    }
+
     async updateUser(req: Request, res: Response) {
         try {
 
