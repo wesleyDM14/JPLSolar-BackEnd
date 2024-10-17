@@ -175,7 +175,17 @@ class ContractService {
             throw new Error('Usuário não encontrado no Banco de Dados.');
         }
 
-        const contractExisting = await prismaClient.contract.findFirst({ where: { id: contratoId } });
+        const contractExisting = await prismaClient.contract.findFirst({
+            where: { id: contratoId },
+            include: {
+                endereco: true,
+                avalista: {
+                    include: {
+                        endereco: true
+                    }
+                }
+            }
+        });
 
         if (!contractExisting) {
             throw new Error('Contrato não encontrado no Banco de Dados.');

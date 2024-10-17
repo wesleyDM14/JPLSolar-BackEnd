@@ -2116,6 +2116,13 @@ text-table@^0.2.0:
   resolved "https://registry.yarnpkg.com/text-table/-/text-table-0.2.0.tgz#7f5ee823ae805207c00af2df4a84ec3fcfa570b4"
   integrity sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw==
 
+textbox-for-pdfkit@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/textbox-for-pdfkit/-/textbox-for-pdfkit-0.2.1.tgz#c21df66dd81e3afc426446f06c1c7f893e21a620"
+  integrity sha512-WyCz87HKm8U/LWT2H4hF2O8iazZzVOtGY/hMN2fkYc7uBM9Hu3/vsNmjb6BxrIG+cLvEupkbhkk0n+4iQc4J4Q==
+  dependencies:
+    fontkit "^1.8.1"
+
 tiny-inflate@^1.0.0, tiny-inflate@^1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/tiny-inflate/-/tiny-inflate-1.0.3.tgz#122715494913a1805166aaf7c93467933eea26c4"

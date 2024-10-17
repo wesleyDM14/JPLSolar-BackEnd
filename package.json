@@ -21,7 +21,8 @@
     "numero-por-extenso": "^1.0.8",
     "p-limit": "^6.1.0",
     "pdfkit": "^0.15.0",
-    "superagent": "^10.1.0"
+    "superagent": "^10.1.0",
+    "textbox-for-pdfkit": "^0.2.1"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

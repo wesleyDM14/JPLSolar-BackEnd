@@ -1,14 +1,15 @@
 import PDFDocument from 'pdfkit';
-import extenso from 'numero-por-extenso';
-
 import { formatDate } from './generateDateExtenso';
 import prismaClient from '../prisma';
+
 
 const formatadorMoeda = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
     minimumFractionDigits: 2
 });
+
+const extenso = require('numero-por-extenso');
 
 export async function generatePromissoriaPDF(contractId: string, userId: string, dataCallback: any, endCallback: any) {
     try {
@@ -30,6 +31,10 @@ export async function generatePromissoriaPDF(contractId: string, userId: string,
         }
 
         const promissoria = await prismaClient.promissoria.findFirst({ where: { contractId: contractId } });
+
+        if (!promissoria) {
+            throw new Error('Promissoria não encontrada no Banco de Dados.');
+        }
 
         const enderecoCliente = await prismaClient.endereco.findFirst({ where: { id: contractExisting.enderecoId } });
 
@@ -82,16 +87,16 @@ export async function generatePromissoriaPDF(contractId: string, userId: string,
         doc.text(`Vencimento: ${dataPrimeiraParcela}`, { align: 'left' });
         doc.moveDown();
 
-        doc.text(`${valorTotal} (${extenso(contractExisting.priceTotal, { estilo: 'monetario' }).toUpperCase()}).`, { align: 'left' });
+        doc.text(`${valorTotal} (${extenso.porExtenso(contractExisting.priceTotal, extenso.estilo.monetario).toUpperCase()}).`, { align: 'left' });
         doc.moveDown();
 
-        doc.font('Helvetica').text(`No dia `, { continued: true, align: 'justify' });
-        doc.font('Helvetica-Bold').text(` ${dataParcela.getDate()}/${dataParcela.getMonth() + 1} de ${dataParcela.getFullYear()} (${formatDate(dataParcela).toUpperCase()}) `, { continued: true, align: 'justify' });
-        doc.font('Helvetica').text(`pagar por esta única via de nota promissória na praça de São Miguel - RN a GURGEL AZEVEDO E TEOFILO SERVIÇOS DE ENGENHARIA LTDA, inscrito no `, { continued: true, align: 'justify' });
-        doc.font('Helvetica-Bold').text(' CNPJ nº 33.651.184/0001-09 ', { continued: true, align: 'left' });
-        doc.font('Helvetica').text(`ou à sua ordem a quantia de `, { continued: true, align: 'justify' });
-        doc.font('Helvetica-Bold').text(` ${valorTotal} (${extenso(contractExisting.priceTotal, { estilo: 'monetario' }).toUpperCase()})`, { continued: true, align: 'justify' });
-        doc.font('Helvetica').text(`, em moeda corrente deste país.`, { align: 'justify' });
+        doc.font('Helvetica').text(`No dia `, { continued: true, align: 'justify' })
+            .font('Helvetica-Bold').text(` ${dataParcela.getDate().toString().padStart(2, '0')} / ${(dataParcela.getMonth() + 1).toString().padStart(2, '0')} de ${dataParcela.getFullYear()} (${formatDate(dataParcela).toUpperCase()}) `, { continued: true })
+            .font('Helvetica').text(`pagar por esta única via de nota promissória na praça de São Miguel - RN a GURGEL AZEVEDO E TEOFILO SERVIÇOS DE ENGENHARIA LTDA, inscrito no `, { continued: true })
+            .font('Helvetica-Bold').text(' CNPJ nº 33.651.184/0001-09 ', { continued: true })
+            .font('Helvetica').text(` ou à sua ordem a quantia de `, { continued: true })
+            .font('Helvetica-Bold').text(` ${valorTotal} (${extenso.porExtenso(contractExisting.priceTotal, extenso.estilo.monetario).toUpperCase()})`, { continued: true })
+            .font('Helvetica').text(`, em moeda corrente deste país.`);
         doc.moveDown();
 
         doc.text(`São Miguel - RN, ${dataContrato} `, { align: 'justify' });

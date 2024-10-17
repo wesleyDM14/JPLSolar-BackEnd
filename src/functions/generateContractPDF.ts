@@ -1,8 +1,9 @@
 import PDFDocument from 'pdfkit';
 import { addMonths } from 'date-fns';
-import extenso from 'numero-por-extenso';
-
 import prismaClient from '../prisma';
+import { formatCEP, formatCPF } from './formarString';
+
+const extenso = require('numero-por-extenso');
 
 type Table = string[][];
 
@@ -119,6 +120,10 @@ export async function generateContractPDF(contractId: string, userId: string, da
 
         const enderecoCliente = await prismaClient.endereco.findFirst({ where: { id: contractExisting.enderecoId } });
 
+        if (!enderecoCliente) {
+            throw new Error('Endereço não encontrado no banco de dados.');
+        }
+
         let avalista = null;
         let enderecoAvalista = null;
 
@@ -173,24 +178,22 @@ export async function generateContractPDF(contractId: string, userId: string, da
         doc.text('INSTRUMENTO DE COMPRA E VENDA COM ALIENAÇÃO FIDUCIÁRIA', { align: 'center' });
         doc.moveDown();
 
-        doc.text(`Pelo presente instrumento particular de compra e venda com reserva de domínio, a saber de um lado a empresa GURGEL AZEVEDO E TEOFILO SERVIÇOS DE ENGENHARIA LTDA, com sede na cidade de São Miguel - RN, Rua Nikola Tesla, 189, Bairro Maria Manoela, inscrita no CNPJ sob o nº 33.651.184/0001-09, denominada de `, { continued: true, align: 'justify' });
-        doc.font('Helvetica-Bold').text(' VENDEDORA ', { continued: true, align: 'justify' });
-        if (enderecoCliente) {
-            doc.font('Helvetica').text(` e de outro lado ${contractExisting.nome}, ${contractExisting.profissao.toLocaleLowerCase()}, ${contractExisting.estadoCivil}, ${enderecoCliente.logradouro + ', Nº' + enderecoCliente.numero + ', ' + enderecoCliente.bairro + ', ' + enderecoCliente.cidade + ' - ' + enderecoCliente.uf + ', CEP nº ' + enderecoCliente.cep}, portador (a) do CPF nº ${contractExisting.cpf}, denominado de `, { continued: true, align: 'justify' });
-        }
-        doc.font('Helvetica-Bold').text(' COMPRADOR', { continued: true, align: 'justify' });
-        doc.font('Helvetica').text(', tem entre si, justo e acordado o seguinte:', { align: 'justify' })
+        doc.text(`Pelo presente instrumento particular de compra e venda com reserva de domínio, a saber de um lado a empresa GURGEL AZEVEDO E TEOFILO SERVIÇOS DE ENGENHARIA LTDA, com sede na cidade de São Miguel - RN, Rua Nikola Tesla, 189, Bairro Maria Manoela, inscrita no CNPJ sob o nº 33.651.184/0001-09, denominada de `, { continued: true, align: 'justify' })
+            .font('Helvetica-Bold').text(' VENDEDORA ', { continued: true })
+            .font('Helvetica').text(` e de outro lado ${contractExisting.nome}, ${contractExisting.profissao.toLocaleLowerCase()}, ${(contractExisting.estadoCivil).toLowerCase()}, ${enderecoCliente.logradouro + ', Nº' + enderecoCliente.numero + ', ' + enderecoCliente.bairro + ', ' + enderecoCliente.cidade + ' - ' + enderecoCliente.uf + ', CEP nº ' + formatCEP(enderecoCliente.cep)}, portador (a) do CPF nº ${formatCPF(contractExisting.cpf)}, denominado de `, { continued: true })
+            .font('Helvetica-Bold').text(' COMPRADOR', { continued: true })
+            .font('Helvetica').text(', tem entre si, justo e acordado o seguinte:');
         doc.moveDown();
 
         doc.font('Helvetica-Bold').text('CLÁUSULA 1º - ', { continued: true, align: 'justify' });
         doc.font('Helvetica').text(` Que o `, { continued: true, align: 'justify' });
         doc.font('Helvetica-Bold').text(' COMPRADOR ', { continued: true, align: 'justify' });
         doc.font('Helvetica').text(` adquire nesta Data de ${dataContrato}, um sistema fotovoltaico de ${contractExisting.potModulos}kWp de potência com módulos fotovoltaicos ${contractExisting.modeloModulos}, ${contractExisting.potInversor}kW de inversor ${contractExisting.modeloInversor} e estrutura de fixação pela quantia de `, { continued: true, align: 'justify' });
-        doc.font('Helvetica-Bold').text(` ${valorTotal} (${extenso(contractExisting.priceTotal, { estilo: 'monetario' }).toUpperCase()}).`, { align: 'justify' });
+        doc.font('Helvetica-Bold').text(` ${valorTotal} (${extenso.porExtenso(contractExisting.priceTotal, extenso.estilo.monetario).toUpperCase()}).`, { align: 'justify' });
         doc.moveDown();
         doc.font('Helvetica-Bold').text('CLÁUSULA 2º - ', { continued: true, align: 'justify' });
         doc.font('Helvetica').text(` Que para pagamento da quantia mencionada, correspondente ao valor do bem adquirido pelo comprador, esse assume o compromisso de efetuar o pagamento de ${contractExisting.quantParcelas} parcelas mensais e consecutivas de `, { continued: true, align: 'justify' });
-        doc.font('Helvetica-Bold').text(` ${valorParcela} (${extenso(contractExisting.priceParcela, { estilo: 'monetario' }).toUpperCase()}) `, { continued: true, align: 'justify' });
+        doc.font('Helvetica-Bold').text(` ${valorParcela} (${extenso.porExtenso(contractExisting.priceParcela, extenso.estilo.monetario).toUpperCase()}) `, { continued: true, align: 'justify' });
 
         doc.font('Helvetica').text(` a vencer a primeira em ${dataPrimeiraParcela} e a última em ${dataUltimaParcela}, representado por boletos bancários que serão enviados pela `, { continued: true, align: 'justify' });
         doc.font('Helvetica-Bold').text(' VENDEDORA ', { continued: true, align: 'justify' });
@@ -352,6 +355,7 @@ export async function generateContractPDF(contractId: string, userId: string, da
 
         const clauseStartX = 50;
         const clauseIndent = 55; // Espaço entre o número e o texto
+        const pageWidth = 600 - 60 - 60;
 
         // Adiciona o texto das cláusulas com recuo
         const clauses = [
@@ -367,8 +371,11 @@ export async function generateContractPDF(contractId: string, userId: string, da
             // Adiciona o recuo para o texto
             const parts = clause.split(/(COMPRADOR|VENDEDORA)/);
             yPosition = doc.y; // Atualiza a posição Y após adicionar o texto
+
+            const widthAvailable = pageWidth - clauseIndent;
+
             doc.text(parts[0], clauseStartX + clauseIndent, yPosition, {
-                width: 500 - clauseIndent, // Ajuste conforme a largura desejada
+                width: widthAvailable, // Ajuste conforme a largura desejada
                 align: 'justify',
                 continued: true
             });
@@ -381,7 +388,10 @@ export async function generateContractPDF(contractId: string, userId: string, da
                 }
             }
 
-            doc.text('', clauseStartX + clauseIndent, doc.y); // Finaliza a linha
+            doc.text('', clauseStartX + clauseIndent, doc.y, {
+                width: widthAvailable,
+                align: 'justify'
+            }); // Finaliza a linha
 
             yPosition = doc.y + 5; // Adiciona um espaço extra entre as cláusulas
             doc.moveDown(2);
