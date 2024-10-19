@@ -259,17 +259,24 @@ class ContractController {
         }
 
         try {
-            const stream = res.writeHead(200, {
-                'Content-Type': 'application/pdf',
-                'Content-Disposition': 'attachment; filename=contrato.pdf',
-            });
+            generateContractPDF(contractId, req.user.id, (err, pdfBuffer) => {
 
-            await generateContractPDF(
-                contractId,
-                req.user.id,
-                (data: any) => stream.write(data),
-                () => stream.end()
-            );
+                if (err) {
+                    return res.status(500).json({ message: 'Erro ao gerar pdf do contrato.' });
+                }
+
+                if (!pdfBuffer) {
+                    return res.status(500).json({ message: 'Erro ao gerar PDF do contrato: buffer vazio.' });
+                }
+
+                res.writeHead(200, {
+                    'Content-Type': 'application/pdf',
+                    'Content-Disposition': 'attachment; filename=promissoria.pdf',
+                    'Content-Length': pdfBuffer.length
+                });
+
+                res.end(pdfBuffer);
+            });
 
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -290,17 +297,25 @@ class ContractController {
         }
 
         try {
-            const stream = res.writeHead(200, {
-                'Content-Type': 'application/pdf',
-                'Content-Disposition': 'attachment; filename=promissoria.pdf',
-            });
 
-            await generatePromissoriaPDF(
-                contractId,
-                req.user.id,
-                (data: any) => stream.write(data),
-                () => stream.end()
-            );
+            generatePromissoriaPDF(contractId, req.user.id, (err, pdfBuffer) => {
+
+                if (err) {
+                    return res.status(500).json({ message: 'Erro ao gerar pdf  da promissoria.' });
+                }
+
+                if (!pdfBuffer) {
+                    return res.status(500).json({ message: 'Erro ao gerar PDF da promissoria: buffer vazio.' });
+                }
+
+                res.writeHead(200, {
+                    'Content-Type': 'application/pdf',
+                    'Content-Disposition': 'attachment; filename=promissoria.pdf',
+                    'Content-Length': pdfBuffer.length
+                });
+
+                res.end(pdfBuffer);
+            });
 
         } catch (error: unknown) {
             if (error instanceof Error) {

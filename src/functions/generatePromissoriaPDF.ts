@@ -1,7 +1,7 @@
-import PDFDocument from 'pdfkit';
 import { formatDate } from './generateDateExtenso';
 import prismaClient from '../prisma';
-
+import { generatePdf } from 'html-pdf-node';
+import { formatCEP, formatCPF } from './formarString';
 
 const formatadorMoeda = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
@@ -11,7 +11,7 @@ const formatadorMoeda = new Intl.NumberFormat('pt-BR', {
 
 const extenso = require('numero-por-extenso');
 
-export async function generatePromissoriaPDF(contractId: string, userId: string, dataCallback: any, endCallback: any) {
+export async function generatePromissoriaPDF(contractId: string, userId: string, callback: (err: Error | null, buffer: Buffer | null) => void) {
     try {
 
         const existingUser = await prismaClient.user.findUnique({ where: { id: userId } });
@@ -37,6 +37,10 @@ export async function generatePromissoriaPDF(contractId: string, userId: string,
         }
 
         const enderecoCliente = await prismaClient.endereco.findFirst({ where: { id: contractExisting.enderecoId } });
+
+        if (!enderecoCliente) {
+            throw new Error('Endereço não encontrado no banco de dados');
+        }
 
         let avalista = null;
         let enderecoAvalista = null;
@@ -64,71 +68,108 @@ export async function generatePromissoriaPDF(contractId: string, userId: string,
 
         const valorTotal = formatadorMoeda.format(contractExisting.priceTotal);
 
-        const doc = new PDFDocument({
-            size: 'A4',
-            margins: { top: 50, left: 60, right: 60, bottom: 50 }
+        const htmlContent = `
+            <html>
+                <head>
+                    <style>
+                        body {
+                            font-family: 'Helvetica', sans-serif;
+                            font-size: 16px;
+                            line-height: 1.6;
+                            margin: 50px;
+                        }
+
+                        h1 {
+                            font-size: 16px;
+                            text-align: center;
+                        }
+
+                        strong {
+                            font-weight: bold;
+                        }
+
+                        hr {
+                            margin: 50px auto 0px auto;
+                            width: 70%;
+                            border: none;
+                            border-top: 1px solid #000;
+                        }
+
+                        .signature {
+                            text-align: center;
+                            margin-top: 20px !important;
+                        }
+
+                        .center-text {
+                            text-align: center;
+                        }
+
+                        .contract-details {
+                            margin-bottom: 30px;
+                        }
+
+                        .contract-container {
+                            margin-botton: 30px;
+                        }
+
+                        .contract-container > p {
+                            text-align: justify;
+                        }
+
+                        .title-container {
+                            margin-bottom: 50px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="title-container">
+                        <h1>NOTA PROMISSÓRIA</h1>
+                    </div>
+                    <div class="contract-details">
+                        <p>Nº ${promissoria.numero}/${promissoria.ano}</p>
+                        <p>Vencimento: ${dataPrimeiraParcela}</p>
+                        <p>${valorTotal} (${extenso.porExtenso(contractExisting.priceTotal, extenso.estilo.monetario).toUpperCase()}).</p>
+                    </div>
+                    <div class="contract-container">
+                        <p>No dia <strong>${dataParcela.getDate().toString().padStart(2, '0')} / ${(dataParcela.getMonth() + 1).toString().padStart(2, '0')} de ${dataParcela.getFullYear()} (${formatDate(dataParcela).toUpperCase()})</strong> pagar por esta única via de nota promissória na praça de São Miguel - RN a GURGEL AZEVEDO E TEOFILO SERVIÇOS DE ENGENHARIA LTDA, inscrito no <strong>CNPJ nº 33.651.184/0001-09</strong> ou à sua ordem a quantia de <strong>${valorTotal} (${extenso.porExtenso(contractExisting.priceTotal, extenso.estilo.monetario).toUpperCase()})</strong>, em moeda corrente deste país.</p>
+                    </div>
+                    <div class="contract-details">
+                        <p>São Miguel - RN, ${dataContrato}</p>
+                    </div>
+                    <br/>
+                    <div class="signature">
+                        <hr />
+                        <p>${contractExisting.nome.toUpperCase()}</p>
+                        <p>CPF: ${formatCPF(contractExisting.cpf)}</p>
+                        <p>${enderecoCliente.logradouro + ', Nº' + enderecoCliente.numero + ', ' + enderecoCliente.bairro + ', ' + enderecoCliente.cidade + ' - ' + enderecoCliente.uf + ', ' + formatCEP(enderecoCliente.cep)}</p>
+                    </div>
+                    <br/>
+                    ${avalista && enderecoAvalista ?
+                            `<div class="signature">
+                                <hr />
+                                <p>${avalista.nome.toUpperCase()}</p>
+                                <p>CPF: ${formatCPF(avalista.cpf)}</p>
+                                <p>${enderecoAvalista.logradouro + ', Nº' + enderecoAvalista.numero + ', ' + enderecoAvalista.bairro + ', ' + enderecoAvalista.cidade + ' - ' + enderecoAvalista.uf + ', ' + formatCEP(enderecoAvalista.cep)}</p>
+                            </div>`
+                        :
+                            ''
+            }
+                </body>
+            </html>
+        `;
+
+        const options = { format: 'A4' };
+        const file = { content: htmlContent };
+
+        const pdfBuffer = generatePdf(file, options, (err, buffer) => {
+            if (err) {
+                return callback(err, null);
+            }
+            callback(null, buffer);
         });
 
-        //Conectando os callbacks aos eventos de fluxo
-        doc.on('data', dataCallback);
-        doc.on('end', endCallback);
+        return pdfBuffer;
 
-        //Configuração do documento
-        doc.font('Helvetica').fontSize(14);
-
-        doc.text('NOTA PROMISSÓRIA', { align: 'center' });
-        doc.moveDown();
-
-        if (promissoria) {
-            doc.text(`Nº ${promissoria.numero}/${promissoria.ano}`, { align: 'left' });
-            doc.moveDown();
-        }
-
-        doc.text(`Vencimento: ${dataPrimeiraParcela}`, { align: 'left' });
-        doc.moveDown();
-
-        doc.text(`${valorTotal} (${extenso.porExtenso(contractExisting.priceTotal, extenso.estilo.monetario).toUpperCase()}).`, { align: 'left' });
-        doc.moveDown();
-
-        doc.font('Helvetica').text(`No dia `, { continued: true, align: 'justify' })
-            .font('Helvetica-Bold').text(` ${dataParcela.getDate().toString().padStart(2, '0')} / ${(dataParcela.getMonth() + 1).toString().padStart(2, '0')} de ${dataParcela.getFullYear()} (${formatDate(dataParcela).toUpperCase()}) `, { continued: true })
-            .font('Helvetica').text(`pagar por esta única via de nota promissória na praça de São Miguel - RN a GURGEL AZEVEDO E TEOFILO SERVIÇOS DE ENGENHARIA LTDA, inscrito no `, { continued: true })
-            .font('Helvetica-Bold').text(' CNPJ nº 33.651.184/0001-09 ', { continued: true })
-            .font('Helvetica').text(` ou à sua ordem a quantia de `, { continued: true })
-            .font('Helvetica-Bold').text(` ${valorTotal} (${extenso.porExtenso(contractExisting.priceTotal, extenso.estilo.monetario).toUpperCase()})`, { continued: true })
-            .font('Helvetica').text(`, em moeda corrente deste país.`);
-        doc.moveDown();
-
-        doc.text(`São Miguel - RN, ${dataContrato} `, { align: 'justify' });
-        doc.moveDown();
-        doc.moveDown();
-        doc.moveDown();
-        doc.moveDown();
-        doc.moveDown();
-        doc.moveDown();
-
-        doc.text(`_____________________________________________`, { align: 'center' });
-        doc.text(`${contractExisting.nome.toUpperCase()}`, { align: 'center' });
-        doc.text(`CPF: ${contractExisting.cpf}`, { align: 'center' });
-        if (enderecoCliente) {
-            doc.text(`${enderecoCliente.logradouro + ', Nº' + enderecoCliente.numero + ', ' + enderecoCliente.bairro + ', ' + enderecoCliente.cidade + ' - ' + enderecoCliente.uf + ', ' + enderecoCliente.cep}`, { align: 'center' });
-            doc.moveDown();
-        }
-
-        doc.moveDown();
-        doc.moveDown();
-        doc.moveDown();
-
-        //caso tenha AVALISTA
-        if (avalista && enderecoAvalista) {
-            doc.text(`_____________________________________________`, { align: 'center' });
-            doc.text(`${avalista.nome.toUpperCase()}`, { align: 'center' });
-            doc.text(`CPF: ${avalista.cpf}`, { align: 'center' });
-            doc.text(`${enderecoAvalista.logradouro + ', Nº' + enderecoAvalista.numero + ', ' + enderecoAvalista.bairro + ', ' + enderecoAvalista.cidade + ' - ' + enderecoAvalista.uf + ', ' + enderecoAvalista.cep}`, { align: 'center' });
-            doc.moveDown();
-        }
-
-        doc.end();
     } catch (error: unknown) {
         if (error instanceof Error) {
             console.error('Erro ao gerar PDF do contrato: ' + error.message);

@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@prisma/client": "^5.18.0",
+    "@types/html-pdf-node": "^1.0.2",
     "axios": "^1.7.4",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
@@ -17,10 +18,10 @@
     "express": "^4.19.2",
     "express-async-errors": "^3.1.1",
     "growatt": "^0.7.5",
+    "html-pdf-node": "^1.0.8",
     "jsonwebtoken": "^9.0.2",
     "numero-por-extenso": "^1.0.8",
     "p-limit": "^6.1.0",
-    "pdfkit": "^0.15.0",
     "superagent": "^10.1.0",
     "textbox-for-pdfkit": "^0.2.1"
   },
@@ -29,7 +30,6 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.6",
-    "@types/pdfkit": "^0.13.4",
     "@types/superagent": "^8.1.9",
     "prisma": "^5.18.0",
     "ts-node": "^10.9.2",
