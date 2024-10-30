@@ -23,6 +23,7 @@
     "numero-por-extenso": "^1.0.8",
     "p-limit": "^6.1.0",
     "superagent": "^10.1.0",
+    "superagent-cookie": "^0.1.1",
     "textbox-for-pdfkit": "^0.2.1"
   },
   "devDependencies": {

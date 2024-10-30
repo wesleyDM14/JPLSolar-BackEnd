@@ -2573,6 +2573,11 @@ style-data@^1.4.8:
     mediaquery-text "^1.2.0"
     pick-util "^1.1.4"
 
+superagent-cookie@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/superagent-cookie/-/superagent-cookie-0.1.1.tgz#c624c00c881a22d4729e52b1dc9f18be450330df"
+  integrity sha512-cIQE4u3e8/hujzv7kcD77yH04QXiuN3tUViBm6Ys68I0JgmEpX9BL5WcOeo2mb1AdW5XfAEeFf78OlpnNIHuEg==
+
 superagent@^10.1.0:
   version "10.1.0"
   resolved "https://registry.yarnpkg.com/superagent/-/superagent-10.1.0.tgz#9c56cbc51fca902ed07e93ff64bc7af3d823c7ea"

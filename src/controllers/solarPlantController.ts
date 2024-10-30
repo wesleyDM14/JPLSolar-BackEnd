@@ -213,30 +213,30 @@ class SolarPlantController {
 
     async getSolarPlantParams(req: Request, res: Response) {
         try {
-            const { login, password, inverter, plantUserId } = req.params;
+            const { login, password, inversor, userId } = req.body;
 
-            if (!login || !password || !inverter || !plantUserId) {
+            if (!login || !password || !inversor || !userId) {
                 return res.status(400).json({ message: 'Parâmetros da url estão faltando.' });
             }
 
-            if (!req.user.isAdmin && plantUserId !== req.user.id) {
+            if (!req.user.isAdmin && userId !== req.user.id) {
                 return res.status(403).json({ error: 'Acesso negado: Planta Solar não pertence ao usuário.' });
             }
 
             let response = null;
 
-            if (inverter === Inversor.ABB) {
+            if (inversor === Inversor.ABB) {
                 response = await solarPlantService.getAbbParams(login, password);
-            } else if (inverter === Inversor.CANADIAN) {
+            } else if (inversor === Inversor.CANADIAN) {
                 response = await solarPlantService.getCanadianParams(login, password);
-            } else if (inverter === Inversor.DEYE) {
+            } else if (inversor === Inversor.DEYE) {
                 response = await solarPlantService.getDeyeParams(login, password);
-            } else if (inverter === Inversor.GROWATT) {
-                response = await solarPlantService.getGrowattParams(login, password);
+            } else if (inversor === Inversor.GROWATT) {
+                response = await solarPlantService.getGrowattParams(login, password, req.user.id);
             } else {
                 return res.status(400).json({ message: 'inversor não suportado na API.' });
             }
-            
+
             return res.status(200).json(response);
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -245,6 +245,40 @@ class SolarPlantController {
             } else {
                 console.error('Erro ao pegar parametros individuais da planta solar: Erro desconhecido.');
                 res.status(500).json({ message: 'Erro ao pegar parametros individuais da planta solar: Erro desconhecido.' });
+            }
+        }
+    }
+
+    async getErrorList(req: Request, res: Response) {
+        try {
+            const { login, password, year, plantId, inversor } = req.body;
+
+            if (!login || !password || (year === null || year === undefined) || !plantId || !inversor) {
+                return res.status(400).json({ message: 'Parâmetros da planta solar estão faltando.' });
+            }
+
+            let response = null;
+
+            if (inversor === Inversor.ABB) {
+                //response = await solarPlantService.getAbbParams(login, password);
+            } else if (inversor === Inversor.CANADIAN) {
+                //response = await solarPlantService.getCanadianParams(login, password);
+            } else if (inversor === Inversor.DEYE) {
+                //response = await solarPlantService.getDeyeParams(login, password);
+            } else if (inversor === Inversor.GROWATT) {
+                response = await solarPlantService.getErrorDataListGrowatt(login, password, year, plantId, req.user.id);
+            } else {
+                return res.status(400).json({ message: 'inversor não suportado na API.' });
+            }
+
+            return res.status(200).json(response);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error('Erro ao pegar lista de erros da planta solar: ' + error.message);
+                res.status(500).json({ message: 'Erro ao pegar lista de erros da planta solar: ' + error.message });
+            } else {
+                console.error('Erro ao pegar lista de erros da planta solar: Erro desconhecido.');
+                res.status(500).json({ message: 'Erro ao pegar lista de erros da planta solar: Erro desconhecido.' });
             }
         }
     }

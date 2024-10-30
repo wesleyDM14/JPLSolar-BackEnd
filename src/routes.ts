@@ -37,12 +37,13 @@ router.delete('/clientes/:clientId', authenticateUser, clientController.deleteCl
 
 //CRUD para Planta Solar
 router.post('/plantasSolar', authenticateUser, solarPlantController.createSolarPlant.bind(solarPlantController));
+router.post('/params/solarPlant', authenticateUser, solarPlantController.getSolarPlantParams.bind(solarPlantController));
+router.post('/plantasSolar/errorList', authenticateUser, solarPlantController.getErrorList.bind(solarPlantController));
 router.get('/plantasSolar', authenticateUser, IsAdminUser, solarPlantController.getSolarPlants.bind(solarPlantController));
 router.get('/mySolarPlants', authenticateUser, solarPlantController.getSelfSolarPlants.bind(solarPlantController));
 router.get('/users/:userId/solarPlants', authenticateUser, IsAdminUser, solarPlantController.getSolarPlantsByUserId.bind(solarPlantController));
 router.get('/clients/:clientId/solarPlants', authenticateUser, solarPlantController.getSolarPlantsByClientId.bind(solarPlantController));
 router.get('/plantasSolar/:solarPlantId', authenticateUser, solarPlantController.getSolarPlantById.bind(solarPlantController));
-router.get('/params/:login/:password/:inverter', authenticateUser, solarPlantController.getSolarPlantParams.bind(solarPlantController));
 router.put('/plantasSolar/:solarPlantId', authenticateUser, solarPlantController.updateSolarPlant.bind(solarPlantController));
 router.delete('/plantasSolar/:solarPlantId', authenticateUser, solarPlantController.deleteSolarPlant.bind(solarPlantController));
 
