@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 
 import SolarPlantService from "../services/solarPlantService";
 import { Inversor } from "@prisma/client";
+import { generateSolarPlantReport } from "../functions/generateSolarPlantReport";
 
 const solarPlantService = new SolarPlantService();
 
@@ -279,6 +280,83 @@ class SolarPlantController {
             } else {
                 console.error('Erro ao pegar lista de erros da planta solar: Erro desconhecido.');
                 res.status(500).json({ message: 'Erro ao pegar lista de erros da planta solar: Erro desconhecido.' });
+            }
+        }
+    }
+
+    async getChartByType(req: Request, res: Response) {
+        try {
+            const { login, password, date, type, plantId, deviceTypeName, deviceSN, inversor } = req.body;
+
+            if (!login || !password || !date || !plantId || !inversor || !type || !deviceTypeName || !deviceSN) {
+                return res.status(400).json({ message: 'Parâmetros da planta solar estão faltando.' });
+            }
+
+            let response = null;
+
+            if (inversor === Inversor.ABB) {
+                //response = await solarPlantService.getAbbParams(login, password);
+            } else if (inversor === Inversor.CANADIAN) {
+                //response = await solarPlantService.getCanadianParams(login, password);
+            } else if (inversor === Inversor.DEYE) {
+                //response = await solarPlantService.getDeyeParams(login, password);
+            } else if (inversor === Inversor.GROWATT) {
+                response = await solarPlantService.getChartByTypeGrowatt(login, password, date, type, plantId, deviceTypeName, deviceSN, req.user.id);
+            } else {
+                return res.status(400).json({ message: 'inversor não suportado na API.' });
+            }
+
+            return res.status(200).json(response);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error('Erro ao pegar dados de geração da planta solar: ' + error.message);
+                res.status(500).json({ message: 'Erro ao pegar dados de geração da planta solar: ' + error.message });
+            } else {
+                console.error('Erro ao pegar dados de geração da planta solar: Erro desconhecido.');
+                res.status(500).json({ message: 'Erro ao pegar dados de geração da planta solar: Erro desconhecido.' });
+            }
+        }
+    }
+
+    async getReportBySolarPlant(req: Request, res: Response) {
+        try {
+            const solarPlantId = req.params.solarPlantId;
+            const { year } = req.body;
+
+            if (!solarPlantId) {
+                return res.status(400).json({ message: 'Id de planta solar não fornecido.' });
+            }
+
+            if (year === undefined || year === null) {
+                return res.status(400).json({ message: 'Ano não informado.' });
+            }
+                    
+            generateSolarPlantReport(solarPlantId, req.user.id, year, (err, pdfBuffer) => {
+
+                if (err) {
+                    return res.status(500).json({ message: 'Erro ao gerar relatório de usina solar.' });
+                }
+
+                if (!pdfBuffer) {
+                    return res.status(500).json({ message: 'Erro ao gerar relatório de usina solar: buffer vazio.' });
+                }
+
+                res.writeHead(200, {
+                    'Content-Type': 'application/pdf',
+                    'Content-Disposition': 'attachment; filename=report.pdf',
+                    'Content-Length': pdfBuffer.length
+                });
+
+                res.end(pdfBuffer);
+            });
+
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error('Erro ao gerar relatório de geração solar da planta: ' + error.message);
+                res.status(500).json({ message: 'Erro ao gerar relatório de geração solar da planta: ' + error.message });
+            } else {
+                console.error('Erro ao gerar relatório de geração solar da planta: Erro desconhecido.');
+                res.status(500).json({ message: 'Erro ao gerar relatório de geração solar da planta: Erro desconhecido.' });
             }
         }
     }

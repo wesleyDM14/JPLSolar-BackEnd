@@ -25,8 +25,8 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 });
 
 //Rota de teste
-app.get('/up', (req, res) => {
-    res.send('Servidor rodando!');
+app.get('/up', async (req, res) => {
+    res.send('Up');
 });
 
 //Inicialização do servidor

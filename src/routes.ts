@@ -39,6 +39,8 @@ router.delete('/clientes/:clientId', authenticateUser, clientController.deleteCl
 router.post('/plantasSolar', authenticateUser, solarPlantController.createSolarPlant.bind(solarPlantController));
 router.post('/params/solarPlant', authenticateUser, solarPlantController.getSolarPlantParams.bind(solarPlantController));
 router.post('/plantasSolar/errorList', authenticateUser, solarPlantController.getErrorList.bind(solarPlantController));
+router.post('/plantasSolar/getChartsByType', authenticateUser, solarPlantController.getChartByType.bind(solarPlantController));
+router.post('/plantaSolar/:solarPlantId/pdf', authenticateUser, solarPlantController.getReportBySolarPlant.bind(solarPlantController));
 router.get('/plantasSolar', authenticateUser, IsAdminUser, solarPlantController.getSolarPlants.bind(solarPlantController));
 router.get('/mySolarPlants', authenticateUser, solarPlantController.getSelfSolarPlants.bind(solarPlantController));
 router.get('/users/:userId/solarPlants', authenticateUser, IsAdminUser, solarPlantController.getSolarPlantsByUserId.bind(solarPlantController));

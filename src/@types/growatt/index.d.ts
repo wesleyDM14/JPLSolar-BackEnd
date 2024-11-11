@@ -74,6 +74,7 @@ declare module 'growatt' {
         sharePlantLogin(key: string): Promise<ApiResponse>;
         demoLogin(): Promise<ApiResponse>;
         getAllPlantData(options?: { [key: string]: any }): Promise<{ [key: string]: PlantData }>;
+        getDataLoggers(): Promise<any>;
         logout(): Promise<ApiResponse>;
     }
 
@@ -85,6 +86,7 @@ declare module 'growatt' {
         sharePlantLogin(key: string): Promise<ApiResponse>;
         demoLogin(): Promise<ApiResponse>;
         getAllPlantData(options?: { [key: string]: any }): Promise<{ [key: string]: PlantData }>;
+        getDataLoggers(): Promise<any>;
         logout(): Promise<ApiResponse>;
     }
 

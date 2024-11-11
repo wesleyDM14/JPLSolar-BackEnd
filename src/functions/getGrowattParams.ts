@@ -1,5 +1,6 @@
 import superagent from "superagent";
 import growatt from 'growatt';
+import getCurrentDateInBrazil from "./getCurrentDateInBrazil";
 
 const cookie = require('superagent-cookie');
 const superApi = superagent.agent();
@@ -31,17 +32,24 @@ export const fetchGrowattData = async (login: string, password: string) => {
         let result: Record<string, any> = {};
 
         if (await verifyLoginType(login, password)) {
+            let headers: Record<string, any> = {};
             let loginDashboard = await superApi.post('https://server.growatt.com/login').send({
                 account: login,
-                password: password,
+                password: password
             }).set('Content-Type', 'application/x-www-form-urlencoded')
                 .timeout({
                     response: 10000,
+                }).then((res) => {
+                    cookie.save(res.headers['set-cookie'], 'growattCookies');
+                    headers = {
+                        'cookie': cookie.use('growattCookies')
+                    }
                 });
 
             let plantList = await superApi.post('https://server.growatt.com/index/getPlantListTitle')
                 .send()
                 .set('Content-Type', 'text/html')
+                .set(headers)
                 .timeout({
                     response: 10000,
                 });
@@ -51,22 +59,16 @@ export const fetchGrowattData = async (login: string, password: string) => {
             let getWeatherInfo = await superApi.post(`https://server.growatt.com/index/getWeatherByPlantId?plantId=${temp}`)
                 .send()
                 .set('Content-Type', 'text/html')
+                .set(headers)
                 .timeout({
                     response: 10000,
                 });
             result.weather = JSON.parse(getWeatherInfo.text).obj.data.HeWeather6[0];
 
-            let getTotalData = await superApi.post('https://server.growatt.com/device/getPlantTotalData')
-                .send({ plantId: temp, })
-                .set('Content-Type', 'application/x-www-form-urlencoded')
-                .timeout({
-                    response: 10000,
-                });
-            result.totalData = JSON.parse(getTotalData.text).obj;
-
             let getPlantData = await superApi.post(`https://server.growatt.com/panel/getPlantData?plantId=${temp}`)
                 .send()
                 .set('Content-Type', 'text/html')
+                .set(headers)
                 .timeout({
                     response: 10000,
                 });
@@ -75,10 +77,20 @@ export const fetchGrowattData = async (login: string, password: string) => {
             let getInverterDevice = await superApi.post('https://server.growatt.com/panel/getDevicesByPlantList')
                 .send({ plantId: temp, currPage: 1 })
                 .set('Content-Type', 'application/x-www-form-urlencoded')
+                .set(headers)
                 .timeout({
                     response: 10000,
                 });
             result.deviceSN = JSON.parse(getInverterDevice.text).obj.datas[0];
+
+            let getTotalData = await superApi.post('https://server.growatt.com/device/getPlantTotalData')
+                .send({ plantId: temp, })
+                .set('Content-Type', 'application/x-www-form-urlencoded')
+                .set(headers)
+                .timeout({
+                    response: 10000,
+                });
+            result.totalData = JSON.parse(getTotalData.text).obj;
 
             let deviceTypeName = result.deviceSN.deviceTypeName;
             let getInverterDeviceInfo = await superApi.post('https://server.growatt.com/panel/getDeviceInfo')
@@ -87,6 +99,7 @@ export const fetchGrowattData = async (login: string, password: string) => {
                     deviceTypeName: deviceTypeName,
                     sn: result.deviceSN.alias,
                 }).set('Content-Type', 'application/x-www-form-urlencoded')
+                .set(headers)
                 .timeout({
                     response: 10000,
                 });
@@ -98,6 +111,7 @@ export const fetchGrowattData = async (login: string, password: string) => {
                     deviceTypeName: 'datalog',
                     sn: result.deviceSN.datalogSn,
                 }).set('Content-Type', 'application/x-www-form-urlencoded')
+                .set(headers)
                 .timeout({
                     response: 10000,
                 });
@@ -111,6 +125,7 @@ export const fetchGrowattData = async (login: string, password: string) => {
                         plantId: temp,
                         tlxSn: result.deviceSN.alias,
                     }).set('Content-Type', 'application/x-www-form-urlencoded')
+                    .set(headers)
                     .timeout({
                         response: 10000,
                     });
@@ -121,6 +136,7 @@ export const fetchGrowattData = async (login: string, password: string) => {
                         date: today,
                         plantId: temp,
                     }).set('Content-Type', 'application/x-www-form-urlencoded')
+                    .set(headers)
                     .timeout({
                         response: 10000,
                     });
@@ -136,6 +152,7 @@ export const fetchGrowattData = async (login: string, password: string) => {
                     type: 3
                 })
                 .set('Content-Type', 'application/x-www-form-urlencoded')
+                .set(headers)
                 .timeout({
                     response: 10000,
                 });
@@ -291,7 +308,6 @@ export const fetchGrowattData = async (login: string, password: string) => {
                 });
             let logoult = await superApi.get('https://server.growatt.com/logout');
         }
-
         return result;
     } catch (error) {
         console.log(error);
@@ -305,10 +321,25 @@ export const getErrorDataListForYear = async (login: string, password: string, y
         result.errorLog = [];
 
         if (await verifyLoginType(login, password)) {
-
             let dashboard = await superApi.post('https://server.growatt.com/login').send({
                 account: login,
                 password: password,
+            }).set('Content-Type', 'application/x-www-form-urlencoded');
+
+            let getDataErrorLog = await superApi.post('https://server.growatt.com/log/getNewPlantFaultLog')
+                .send({
+                    deviceSn: '',
+                    date: year,
+                    plantId: plantId,
+                    toPageNum: 1,
+                    type: 3
+                })
+                .set('Content-Type', 'application/x-www-form-urlencoded');
+            result.errorLog = JSON.parse(getDataErrorLog.text).obj.datas;
+        } else {
+            let dashboard = await superApi.post('https://server.growatt.com/login').send({
+                account: login,
+                password: password
             }).set('Content-Type', 'application/x-www-form-urlencoded');
 
             let starterDate = new Date();
@@ -351,22 +382,6 @@ export const getErrorDataListForYear = async (login: string, password: string, y
                     }
                 });
             }
-        } else {
-            let dashboard = await superApi.post('https://server.growatt.com/login').send({
-                account: login,
-                password: password,
-            }).set('Content-Type', 'application/x-www-form-urlencoded');
-
-            let getDataErrorLog = await superApi.post('https://server.growatt.com/log/getNewPlantFaultLog')
-                .send({
-                    deviceSn: '',
-                    date: year,
-                    plantId: plantId,
-                    toPageNum: 1,
-                    type: 3
-                })
-                .set('Content-Type', 'application/x-www-form-urlencoded');
-            result.errorLog = JSON.parse(getDataErrorLog.text).obj.datas;
         }
 
         let logoult = await superApi.get('https://server.growatt.com/logout');
@@ -382,121 +397,125 @@ export const getChartByType = async (login: string, password: string, date: stri
     try {
         let result: Record<string, any> = {};
         let chart: superagent.Response | undefined;
-        if (await verifyLoginType(login, password)) {
-            let dashboard = await superApi.post('https://server.growatt.com/login').send({
-                account: login,
-                password: password,
-            }).set('Content-Type', 'application/x-www-form-urlencoded');
 
-            switch (type) {
-                case 'time':
-                    chart = await superApi.post('http://server.growatt.com/indexbC/inv/getInvEnergyDayChart').send({
-                        plantId: plantId,
-                        date: date
-                    }).set('Content-Type', 'application/x-www-form-urlencoded');
-                    break;
-                case 'day':
-                    chart = await superApi.post('http://server.growatt.com/indexbC/inv/getInvEnergyMonthChart').send({
-                        plantId: plantId,
-                        date: date
-                    }).set('Content-Type', 'application/x-www-form-urlencoded');
-                    break;
-                case 'mouth':
-                    chart = await superApi.post('http://server.growatt.com/indexbC/inv/getInvEnergyYearChart').send({
-                        plantId: plantId,
-                        date: date
-                    }).set('Content-Type', 'application/x-www-form-urlencoded');
-                    break;
-                case 'year':
-                    let today = new Date().getFullYear();
-                    chart = await superApi.post('http://server.growatt.com/indexbC/inv/getInvEnergyTotalChart').send({
-                        plantId: plantId,
-                        date: today
-                    }).set('Content-Type', 'application/x-www-form-urlencoded');
-                    break;
-                default:
-                    break;
+        if (await verifyLoginType(login, password)) {
+            let headers: Record<string, any> = {};
+            let loginDashboard = await superApi.post('https://server.growatt.com/login').send({
+                account: login,
+                password: password
+            }).set('Content-Type', 'application/x-www-form-urlencoded')
+                .timeout({
+                    response: 10000,
+                }).then((res) => {
+                    cookie.save(res.headers['set-cookie'], 'growattCookies');
+                    headers = {
+                        'cookie': cookie.use('growattCookies')
+                    }
+                });
+
+            if (type === 'time') {
+                if (deviceTypeName === 'tlx') {
+                    chart = await superApi.post('https://server.growatt.com/panel/tlx/getTLXEnergyDayChart')
+                        .send({
+                            date: date,
+                            plantId: plantId,
+                            tlxSn: deviceSN,
+                        }).set('Content-Type', 'application/x-www-form-urlencoded');
+                } else if (deviceTypeName === 'max') {
+                    chart = await superApi.post('https://server.growatt.com/panel/max/getMAXDayChart')
+                        .send({
+                            date: date,
+                            plantId: plantId,
+                        }).set('Content-Type', 'application/x-www-form-urlencoded');
+                }
+            } else if (type === 'day') {
+                if (deviceTypeName === 'tlx') {
+                    chart = await superApi.post('https://server.growatt.com/panel/tlx/getTLXEnergyMonthChart')
+                        .send({
+                            date: date,
+                            plantId: plantId,
+                            tlxSn: deviceSN,
+                        }).set('Content-Type', 'application/x-www-form-urlencoded');
+
+                } else if (deviceTypeName === 'max') {
+                    chart = await superApi.post('https://server.growatt.com/panel/max/getMAXMonthChart')
+                        .send({
+                            date: date,
+                            plantId: plantId,
+                        }).set('Content-Type', 'application/x-www-form-urlencoded');
+                }
+            } else if (type === 'mouth') {
+                if (deviceTypeName === 'tlx') {
+                    chart = await superApi.post('https://server.growatt.com/panel/tlx/getTLXEnergyYearChart')
+                        .send({
+                            year: date,
+                            plantId: plantId,
+                            tlxSn: deviceSN,
+                        }).set('Content-Type', 'application/x-www-form-urlencoded');
+                } else if (deviceTypeName === 'max') {
+                    chart = await superApi.post('https://server.growatt.com/panel/max/getMAXYearChart')
+                        .send({
+                            year: date,
+                            plantId: plantId,
+                        }).set('Content-Type', 'application/x-www-form-urlencoded');
+                }
+            } else if (type === 'year') {
+                let temp = new Date().getFullYear();
+                if (deviceTypeName === 'tlx') {
+                    chart = await superApi.post('https://server.growatt.com/panel/tlx/getTLXEnergyTotalChart')
+                        .send({
+                            year: temp,
+                            plantId: plantId,
+                            tlxSn: deviceSN,
+                        }).set('Content-Type', 'application/x-www-form-urlencoded');
+                } else if (deviceTypeName === 'max') {
+                    chart = await superApi.post('https://server.growatt.com/panel/max/getMAXTotalChart')
+                        .send({
+                            year: date,
+                            plantId: plantId,
+                        }).set('Content-Type', 'application/x-www-form-urlencoded');
+                }
             }
 
             if (chart) {
                 result.chart = JSON.parse(chart.text).obj;
             }
-
         } else {
-            let dashboard = await superApi.post('https://server.growatt.com/login').send({
+            let headers: Record<string, any> = {};
+            let loginDashboard = await superApi.post('https://server.growatt.com/login').send({
                 account: login,
-                password: password,
-            }).set('Content-Type', 'application/x-www-form-urlencoded');
+                password: password
+            }).set('Content-Type', 'application/x-www-form-urlencoded')
+                .timeout({
+                    response: 10000,
+                }).then((res) => {
+                    cookie.save(res.headers['set-cookie'], 'growattCookies');
+                    headers = {
+                        'cookie': cookie.use('growattCookies')
+                    }
+                });
 
-            switch (type) {
-                case 'time':
-                    if (deviceTypeName === 'tlx') {
-                        chart = await superApi.post('https://server.growatt.com/panel/tlx/getTLXEnergyDayChart')
-                            .send({
-                                date: date,
-                                plantId: plantId,
-                                tlxSn: deviceSN,
-                            }).set('Content-Type', 'application/x-www-form-urlencoded');
-                    } else if (deviceTypeName === 'max') {
-                        chart = await superApi.post('https://server.growatt.com/panel/max/getMAXDayChart')
-                            .send({
-                                date: date,
-                                plantId: plantId,
-                            }).set('Content-Type', 'application/x-www-form-urlencoded');
-                    }
-                    break;
-                case 'day':
-                    if (deviceTypeName === 'tlx') {
-                        chart = await superApi.post('https://server.growatt.com/panel/tlx/getTLXEnergyMonthChart')
-                            .send({
-                                date: date,
-                                plantId: plantId,
-                                tlxSn: deviceSN,
-                            }).set('Content-Type', 'application/x-www-form-urlencoded');
-
-                    } else if (deviceTypeName === 'max') {
-                        chart = await superApi.post('https://server.growatt.com/panel/max/getMAXMonthChart')
-                            .send({
-                                date: date,
-                                plantId: plantId,
-                            }).set('Content-Type', 'application/x-www-form-urlencoded');
-                    }
-                    break;
-                case 'mouth':
-                    if (deviceTypeName === 'tlx') {
-                        chart = await superApi.post('https://server.growatt.com/panel/tlx/getTLXEnergyYearChart')
-                            .send({
-                                year: date,
-                                plantId: plantId,
-                                tlxSn: deviceSN,
-                            }).set('Content-Type', 'application/x-www-form-urlencoded');
-                    } else if (deviceTypeName === 'max') {
-                        chart = await superApi.post('https://server.growatt.com/panel/max/getMAXYearChart')
-                            .send({
-                                year: date,
-                                plantId: plantId,
-                            }).set('Content-Type', 'application/x-www-form-urlencoded');
-                    }
-                    break;
-                case 'year':
-                    let today = new Date().getFullYear();
-                    if (deviceTypeName === 'tlx') {
-                        chart = await superApi.post('https://server.growatt.com/panel/tlx/getTLXEnergyTotalChart')
-                            .send({
-                                year: today,
-                                plantId: plantId,
-                                tlxSn: deviceSN,
-                            }).set('Content-Type', 'application/x-www-form-urlencoded');
-                    } else if (deviceTypeName === 'max') {
-                        chart = await superApi.post('https://server.growatt.com/panel/max/getMAXTotalChart')
-                            .send({
-                                year: today,
-                                plantId: plantId,
-                            }).set('Content-Type', 'application/x-www-form-urlencoded');
-                    }
-                    break;
-                default:
-                    break;
+            if (type === 'time') {
+                chart = await superApi.post('http://server.growatt.com/indexbC/inv/getInvEnergyDayChart').send({
+                    plantId: plantId,
+                    date: date
+                }).set('Content-Type', 'application/x-www-form-urlencoded');
+            } else if (type === 'day') {
+                chart = await superApi.post('http://server.growatt.com/indexbC/inv/getInvEnergyMonthChart').send({
+                    plantId: plantId,
+                    date: date
+                }).set('Content-Type', 'application/x-www-form-urlencoded');
+            } else if (type === 'mouth') {
+                chart = await superApi.post('http://server.growatt.com/indexbC/inv/getInvEnergyYearChart').send({
+                    plantId: plantId,
+                    date: date
+                }).set('Content-Type', 'application/x-www-form-urlencoded');
+            } else if (type === 'year') {
+                let today = new Date().getFullYear();
+                chart = await superApi.post('http://server.growatt.com/indexbC/inv/getInvEnergyTotalChart').send({
+                    plantId: plantId,
+                    date: today
+                }).set('Content-Type', 'application/x-www-form-urlencoded');
             }
 
             if (chart) {
