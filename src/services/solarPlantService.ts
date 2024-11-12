@@ -1,6 +1,9 @@
 import { Inversor } from "@prisma/client";
 import prismaClient from "../prisma";
 import { fetchGrowattData, getChartByType, getErrorDataListForYear } from "../functions/getGrowattParams";
+import { fetchAbbData } from "../functions/getAbbParams";
+import { fetchCanadianData } from "../functions/getCanadianParams";
+import { fetchDeyeData } from "../functions/getDeyeParams";
 
 class SolarPlantService {
 
@@ -180,16 +183,85 @@ class SolarPlantService {
         return;
     }
 
-    async getAbbParams(login: string, password: string) {
+    async getAbbParams(login: string, password: string, userId: string) {
+        const existingUser = await prismaClient.user.findFirst({ where: { id: userId } });
 
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
+
+        const existingSolarPlant = await prismaClient.plant.findFirst({
+            where: {
+                login: login,
+                password: password,
+            }
+        });
+
+        if (!existingSolarPlant) {
+            throw new Error('Planta Solar não encontrada no banco de dados.');
+        }
+
+        if (existingSolarPlant.userId !== existingUser.id && !existingUser.isAdmin) {
+            throw new Error('Você não tem permissão para acessar a planta solar.');
+        }
+
+        const response = await fetchAbbData(login, password);
+
+        return response;
     }
 
-    async getCanadianParams(login: string, password: string) {
+    async getCanadianParams(login: string, password: string, userId: string) {
+        const existingUser = await prismaClient.user.findFirst({ where: { id: userId } });
 
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
+
+        const existingSolarPlant = await prismaClient.plant.findFirst({
+            where: {
+                login: login,
+                password: password,
+            }
+        });
+
+        if (!existingSolarPlant) {
+            throw new Error('Planta Solar não encontrada no banco de dados.');
+        }
+
+        if (existingSolarPlant.userId !== existingUser.id && !existingUser.isAdmin) {
+            throw new Error('Você não tem permissão para acessar a planta solar.');
+        }
+
+        const response = await fetchCanadianData(login, password);
+
+        return response;
     }
 
-    async getDeyeParams(login: string, password: string) {
+    async getDeyeParams(login: string, password: string, userId: string) {
+        const existingUser = await prismaClient.user.findFirst({ where: { id: userId } });
 
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
+
+        const existingSolarPlant = await prismaClient.plant.findFirst({
+            where: {
+                login: login,
+                password: password,
+            }
+        });
+
+        if (!existingSolarPlant) {
+            throw new Error('Planta Solar não encontrada no banco de dados.');
+        }
+
+        if (existingSolarPlant.userId !== existingUser.id && !existingUser.isAdmin) {
+            throw new Error('Você não tem permissão para acessar a planta solar.');
+        }
+
+        const response = await fetchDeyeData(login, password);
+
+        return response;
     }
 
     async getGrowattParams(login: string, password: string, userId: string) {
@@ -273,7 +345,7 @@ class SolarPlantService {
 
         return response;
     }
-    
+
 }
 
 export default SolarPlantService;

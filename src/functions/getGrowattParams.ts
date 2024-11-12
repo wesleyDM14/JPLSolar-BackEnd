@@ -1,6 +1,5 @@
 import superagent from "superagent";
 import growatt from 'growatt';
-import getCurrentDateInBrazil from "./getCurrentDateInBrazil";
 
 const cookie = require('superagent-cookie');
 const superApi = superagent.agent();
