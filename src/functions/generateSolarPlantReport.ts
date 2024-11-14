@@ -5,6 +5,8 @@ import growatt from "growatt";
 import { Inversor } from "@prisma/client";
 import { generateChart } from "./generateChart";
 import { formatPhone } from "./formarString";
+import { fetchAbbData, getChartAbbByType } from "./getAbbParams";
+import { fetchDeyeData, getChartDeyeByType } from "./getDeyeParams";
 
 const growattApi = new growatt({});
 const growattApiC = new growatt({ indexCandI: true });
@@ -60,10 +62,24 @@ export async function generateSolarPlantReport(solarPlantId: string, userId: str
         let solarPlantParams = null;
 
         if (solarPlantInversor === Inversor.ABB) {
+            const apiResponse = await fetchAbbData(existingSolarPlant.login, existingSolarPlant.password);
+            solarPlantParams = { deviceData: '' };
+            solarPlantParams.deviceData = apiResponse.totalData;
 
-        } else if (solarPlantInversor === Inversor.CANADIAN) {
+            let plantId = apiResponse.plantData.id;
+            let chartResponse = await getChartAbbByType(existingSolarPlant.login, existingSolarPlant.password, year.toString(), 'mouth', plantId);
+
+            powerData = chartResponse.chart.energy;
 
         } else if (solarPlantInversor === Inversor.DEYE) {
+            const apiResponse = await fetchDeyeData(existingSolarPlant.login, existingSolarPlant.password);
+            solarPlantParams = { deviceData: '' };
+            solarPlantParams.deviceData = apiResponse.totalData;
+
+            let plantId = apiResponse.plantData.id;
+            let chartResponse = await getChartDeyeByType(existingSolarPlant.login, existingSolarPlant.password, year.toString(), 'mouth', plantId);
+
+            powerData = chartResponse.chart.energy;
 
         } else if (solarPlantInversor === Inversor.GROWATT) {
             const apiResponse = await fetchPlantData(existingSolarPlant.login, existingSolarPlant.password);
@@ -242,8 +258,8 @@ export async function generateSolarPlantReport(solarPlantId: string, userId: str
                                 <h4>(${((generationMedia / existingSolarPlant.estimatedGeneration) * 100).toFixed(2)}% em relação a produção estimada)**</h5>
                             </div>
                             <div class='dados-producao'>
-                                <div><label>PRODUÇÃO HOJE*:</label><span>${solarPlantParams.deviceData.eToday} KWh</span></div>
-                                <div><label>PRODUÇÃO NO MÊS*:</label><span>${solarPlantParams.deviceData.eMonth} KWh</span></div>
+                                <div><label>PRODUÇÃO HOJE*:</label><span>${parseFloat(solarPlantParams.deviceData.eToday).toFixed(2)} KWh</span></div>
+                                <div><label>PRODUÇÃO NO MÊS*:</label><span>${parseFloat(solarPlantParams.deviceData.eMonth).toFixed(2)} KWh</span></div>
                                 <div><label>PRODUÇÃO TOTAL:</label><span>${solarPlantParams.deviceData.eTotal < 1000 ? (parseFloat(solarPlantParams.deviceData.eTotal)).toFixed(2) : (solarPlantParams.deviceData.eTotal / 1000).toFixed(2)} ${solarPlantParams.deviceData.eTotal < 1000 ? 'kWh' : 'MWh'}</span></div>
                             </div>
                             <h5>*Dados coletados no dia: ${new Date().toLocaleDateString()} às ${(new Date().getHours() >= 10 ? new Date().getHours() : '0' + new Date().getHours())}:${new Date().getMinutes() >= 10 ? new Date().getMinutes() : '0' + new Date().getMinutes()} hrs.</h5>

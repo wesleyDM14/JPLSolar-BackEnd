@@ -1,3 +1,4 @@
+import { lastDayOfMonth } from 'date-fns';
 import superagent from 'superagent';
 const cookie = require('superagent-cookie');
 
@@ -161,5 +162,177 @@ export const fetchAbbData = async (login: string, password: string) => {
     } catch (error) {
         console.log(error);
         throw new Error('Erro ao consultar dados individuais da planta solar.');
+    }
+}
+
+export const getAbbErrorDataListForYear = async (login: string, password: string, year: number, plantId: string) => {
+    try {
+        let result: Record<string, any> = {};
+        result.errorLog = [];
+
+        let dashboard = await superApi.get('https://www.auroravision.net/ums/v1/login?setCookie=true').auth(login, password);
+        let plant = await superApi.get(`https://www.auroravision.net/asset/v1/portfolios/${plantId}/plants?includePerformanceProfiles=true`);
+
+        let generationId = plant.body[0].entityID;
+        let startDate = new Date();
+        startDate.setHours(0);
+        startDate.setMinutes(0);
+        startDate.setDate(1);
+        startDate.setMonth(0);
+        startDate.setFullYear(year);
+
+        let endDate = new Date();
+        endDate.setHours(23);
+        endDate.setMinutes(59);
+        endDate.setMonth(11);
+        endDate.setFullYear(year);
+        endDate.setDate(lastDayOfMonth(endDate).getDate());
+
+        let getDataErrorLog = await superApi.get(`https://www.auroravision.net/event/v1/portfolios/${plantId}/plants/${generationId}/events?eventGroup=SOURCE&eventState=ALL&sdt=${startDate.toISOString()}&edt=${endDate.toISOString()}&locale=en&sortDirection=DESC&offset=0`);
+        let totalResult = getDataErrorLog.body.totalResults;
+        let errorLogTemp = [];
+        errorLogTemp.push(getDataErrorLog.body.events);
+        if (totalResult > 30) {
+            for (var i = 30; i < totalResult; i = i + 30) {
+                getDataErrorLog = await superApi.get(`https://www.auroravision.net/event/v1/portfolios/${plantId}/plants/${generationId}/events?eventGroup=SOURCE&eventState=ALL&sdt=${startDate.toISOString()}&edt=${endDate.toISOString()}&locale=en&sortDirection=DESC&offset=${i}`);
+                errorLogTemp.push(getDataErrorLog.body.events);
+            }
+        }
+        errorLogTemp.forEach(element => {
+            element.forEach((option: any) => {
+                let itemTmp: Record<string, any> = {};
+                itemTmp.alias = option.entityID;
+                itemTmp.deviceType = option.eventType.deviceType;
+                itemTmp.sn = option.entityName;
+                itemTmp.time = option.startDate;
+                itemTmp.eventName = option.eventType.code.name;
+                itemTmp.eventId = option.eventType.code.id;
+                itemTmp.solution = option.eventType.code.description;
+                result.errorLog.push(itemTmp);
+            });
+        });
+
+        let logoult = await superApi.get('https://www.auroravision.net/ums/v1/logout');
+
+        return result;
+    } catch (error) {
+        console.log(error);
+        throw new Error('Erro ao consultar dados do erro da planta.');
+    }
+}
+
+export const getChartAbbByType = async (login: string, password: string, date: string, type: string, plantId: string) => {
+    try {
+        let result: Record<string, any> = {};
+
+        let dashboard = await superApi.get('https://www.auroravision.net/ums/v1/login?setCookie=true').auth(login, password);
+        let plant = await superApi.get(`https://www.auroravision.net/asset/v1/portfolios/${plantId}/plants?includePerformanceProfiles=true`);
+        let generationId = plant.body[0].entityID;
+        result.chart = {};
+
+        if (type === 'time') {
+            let startDate = new Date(date);
+            startDate.setHours(0);
+            startDate.setMinutes(0);
+            let endDate = new Date(date);
+            let today = new Date();
+            if (endDate.getUTCDate() == today.getUTCDate() && endDate.getMonth() == today.getMonth() && today.getFullYear() == endDate.getFullYear()) {
+                endDate.setHours(today.getHours());
+                endDate.setMinutes(today.getMinutes());
+            } else {
+                endDate.setHours(23);
+                endDate.setMinutes(59);
+            }
+            let dayChart = await superApi.get(`https://www.auroravision.net/telemetry/v1/plants/${generationId}/power/GenerationPower?agp=Min15&afx=Avg&sdt=${startDate.toISOString()}&edt=${endDate.toISOString()}`);
+            result.chart.pac = [];
+            dayChart.body.forEach((element: any) => {
+                result.chart.pac.push({ x: element.start, y: element.value });
+            });
+        } else if (type === 'day') {
+            let startDate = new Date(date);
+            startDate.setHours(0);
+            startDate.setMinutes(0);
+            startDate.setDate(1);
+
+            let endDate = new Date(date);
+
+            endDate.setHours(23);
+            endDate.setMinutes(59);
+            endDate.setDate(lastDayOfMonth(endDate).getDate());
+
+            let dayChart = await superApi.get(`https://www.auroravision.net/telemetry/v1/plants/${generationId}/energy/GenerationEnergy?agp=Day&afx=Delta&sdt=${startDate.toISOString()}&edt=${endDate.toISOString()}`);
+            result.chart.energy = [];
+
+            dayChart.body.forEach((element: any) => {
+                if (element.value) {
+                    result.chart.energy.push(element.value);
+                } else {
+                    result.chart.energy.push(0);
+                }
+
+            });
+        } else if (type === 'mouth') {
+            let startDate = new Date();
+            startDate.setHours(0);
+            startDate.setMinutes(0);
+            startDate.setDate(1);
+            startDate.setMonth(0);
+            startDate.setFullYear(parseInt(date));
+
+            let endDate = new Date();
+            endDate.setHours(23);
+            endDate.setMinutes(59);
+            endDate.setMonth(11);
+            endDate.setFullYear(parseInt(date));
+            endDate.setDate(lastDayOfMonth(endDate).getDate());
+
+            let dayChart = await superApi.get(`https://www.auroravision.net/telemetry/v1/plants/${generationId}/energy/GenerationEnergy?agp=Month&afx=Delta&sdt=${startDate.toISOString()}&edt=${endDate.toISOString()}`);
+            result.chart.energy = [];
+
+            dayChart.body.forEach((element: any) => {
+                if (element.value) {
+                    result.chart.energy.push(element.value);
+                } else {
+                    result.chart.energy.push(0);
+                }
+
+            });
+        } else if (type === 'year') {
+            let endYear = new Date(plant.body[0].configuration.installDate).getFullYear();
+            let now = new Date();
+            result.chart.energy = [];
+
+            for (var i = endYear; i <= now.getFullYear(); i++) {
+                let startDate = new Date();
+                startDate.setHours(0);
+                startDate.setMinutes(0);
+                startDate.setDate(1);
+                startDate.setMonth(0);
+                startDate.setFullYear(i);
+
+                let endDate = new Date();
+                endDate.setHours(23);
+                endDate.setMinutes(59);
+                endDate.setMonth(11);
+                endDate.setFullYear(i);
+                endDate.setDate(lastDayOfMonth(endDate).getDate());
+
+                let dayChart = await superApi.get(`https://www.auroravision.net/telemetry/v1/plants/${generationId}/energy/GenerationEnergy?agp=Month&afx=Delta&sdt=${startDate.toISOString()}&edt=${endDate.toISOString()}`);
+                var totalYear = 0;
+                dayChart.body.forEach((element: any) => {
+                    if (element.value) {
+                        totalYear += element.value;
+                    }
+                });
+                result.chart.energy.push(totalYear);
+            }
+        }
+
+        let logoult = await superApi.get('https://www.auroravision.net/ums/v1/logout');
+
+        return result;
+    } catch (error) {
+        console.log(error);
+        throw new Error('Erro ao consultar dados de geração da planta.');
     }
 }

@@ -177,7 +177,6 @@ enum EstadoCivil {
 
 enum Inversor {
     ABB
-    CANADIAN
     DEYE
     GROWATT
 }

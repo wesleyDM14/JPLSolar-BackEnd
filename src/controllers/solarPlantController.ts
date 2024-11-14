@@ -227,11 +227,9 @@ class SolarPlantController {
             let response = null;
 
             if (inversor === Inversor.ABB) {
-                response = await solarPlantService.getAbbParams(login, password);
-            } else if (inversor === Inversor.CANADIAN) {
-                response = await solarPlantService.getCanadianParams(login, password);
+                response = await solarPlantService.getAbbParams(login, password, req.user.id);
             } else if (inversor === Inversor.DEYE) {
-                response = await solarPlantService.getDeyeParams(login, password);
+                response = await solarPlantService.getDeyeParams(login, password, req.user.id);
             } else if (inversor === Inversor.GROWATT) {
                 response = await solarPlantService.getGrowattParams(login, password, req.user.id);
             } else {
@@ -261,11 +259,9 @@ class SolarPlantController {
             let response = null;
 
             if (inversor === Inversor.ABB) {
-                //response = await solarPlantService.getAbbParams(login, password);
-            } else if (inversor === Inversor.CANADIAN) {
-                //response = await solarPlantService.getCanadianParams(login, password);
+                response = await solarPlantService.getErrorDataListAbb(login, password, year, plantId, req.user.id);
             } else if (inversor === Inversor.DEYE) {
-                //response = await solarPlantService.getDeyeParams(login, password);
+                response = await solarPlantService.getErrorDataListDeye(login, password, year, plantId, req.user.id);
             } else if (inversor === Inversor.GROWATT) {
                 response = await solarPlantService.getErrorDataListGrowatt(login, password, year, plantId, req.user.id);
             } else {
@@ -295,11 +291,9 @@ class SolarPlantController {
             let response = null;
 
             if (inversor === Inversor.ABB) {
-                //response = await solarPlantService.getAbbParams(login, password);
-            } else if (inversor === Inversor.CANADIAN) {
-                //response = await solarPlantService.getCanadianParams(login, password);
+                response = await solarPlantService.getChartByTypeAbb(login, password, date, type, plantId, req.user.id);
             } else if (inversor === Inversor.DEYE) {
-                //response = await solarPlantService.getDeyeParams(login, password);
+                response = await solarPlantService.getChartByTypeDeye(login, password, date, type, plantId, req.user.id);
             } else if (inversor === Inversor.GROWATT) {
                 response = await solarPlantService.getChartByTypeGrowatt(login, password, date, type, plantId, deviceTypeName, deviceSN, req.user.id);
             } else {
@@ -330,7 +324,7 @@ class SolarPlantController {
             if (year === undefined || year === null) {
                 return res.status(400).json({ message: 'Ano não informado.' });
             }
-                    
+
             generateSolarPlantReport(solarPlantId, req.user.id, year, (err, pdfBuffer) => {
 
                 if (err) {

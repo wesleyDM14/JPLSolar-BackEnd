@@ -1,9 +1,8 @@
 import { Inversor } from "@prisma/client";
 import prismaClient from "../prisma";
 import { fetchGrowattData, getChartByType, getErrorDataListForYear } from "../functions/getGrowattParams";
-import { fetchAbbData } from "../functions/getAbbParams";
-import { fetchCanadianData } from "../functions/getCanadianParams";
-import { fetchDeyeData } from "../functions/getDeyeParams";
+import { fetchAbbData, getAbbErrorDataListForYear, getChartAbbByType } from "../functions/getAbbParams";
+import { fetchDeyeData, getChartDeyeByType, getDeyeErrorDataListForYear } from "../functions/getDeyeParams";
 
 class SolarPlantService {
 
@@ -72,8 +71,14 @@ class SolarPlantService {
             throw new Error('Usuário não encontrado no banco de dados.');
         }
 
-        const solarPlants = await prismaClient.plant.findMany({ where: { userId: existingUser.id } });
-        return solarPlants;
+        const solarPlants = await prismaClient.plant.findMany({
+            where: { userId: existingUser.id },
+            orderBy: { installationDate: "desc" },
+        });
+
+        const result = { userInfo: existingUser, solarPlants: solarPlants };
+
+        return result;
     }
 
     async getSolarPlantsByClientId(clientId: string, userId: string) {
@@ -94,7 +99,9 @@ class SolarPlantService {
         }
 
         const solarPlants = await prismaClient.plant.findMany({ where: { clientId: existingClient.id } });
-        return solarPlants;
+        const result = { client: existingClient, solarPlants: solarPlants };
+
+        return result;
     }
 
     async getSolarPlantById(solarPlantId: string, userId: string) {
@@ -210,33 +217,6 @@ class SolarPlantService {
         return response;
     }
 
-    async getCanadianParams(login: string, password: string, userId: string) {
-        const existingUser = await prismaClient.user.findFirst({ where: { id: userId } });
-
-        if (!existingUser) {
-            throw new Error('Usuário não encontrado no banco de dados.');
-        }
-
-        const existingSolarPlant = await prismaClient.plant.findFirst({
-            where: {
-                login: login,
-                password: password,
-            }
-        });
-
-        if (!existingSolarPlant) {
-            throw new Error('Planta Solar não encontrada no banco de dados.');
-        }
-
-        if (existingSolarPlant.userId !== existingUser.id && !existingUser.isAdmin) {
-            throw new Error('Você não tem permissão para acessar a planta solar.');
-        }
-
-        const response = await fetchCanadianData(login, password);
-
-        return response;
-    }
-
     async getDeyeParams(login: string, password: string, userId: string) {
         const existingUser = await prismaClient.user.findFirst({ where: { id: userId } });
 
@@ -319,6 +299,60 @@ class SolarPlantService {
         return response;
     }
 
+    async getErrorDataListAbb(login: string, password: string, year: number, plantId: string, userId: string) {
+        const existingUser = await prismaClient.user.findFirst({ where: { id: userId } });
+
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
+
+        const existingSolarPlant = await prismaClient.plant.findFirst({
+            where: {
+                login: login,
+                password: password,
+            }
+        });
+
+        if (!existingSolarPlant) {
+            throw new Error('Planta Solar não encontrada no banco de dados.');
+        }
+
+        if (existingSolarPlant.userId !== existingUser.id && !existingUser.isAdmin) {
+            throw new Error('Você não tem permissão para acessar a planta solar.');
+        }
+
+        const response = await getAbbErrorDataListForYear(login, password, year, plantId);
+
+        return response;
+    }
+
+    async getErrorDataListDeye(login: string, password: string, year: number, plantId: string, userId: string) {
+        const existingUser = await prismaClient.user.findFirst({ where: { id: userId } });
+
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
+
+        const existingSolarPlant = await prismaClient.plant.findFirst({
+            where: {
+                login: login,
+                password: password,
+            }
+        });
+
+        if (!existingSolarPlant) {
+            throw new Error('Planta Solar não encontrada no banco de dados.');
+        }
+
+        if (existingSolarPlant.userId !== existingUser.id && !existingUser.isAdmin) {
+            throw new Error('Você não tem permissão para acessar a planta solar.');
+        }
+
+        const response = await getDeyeErrorDataListForYear(login, password, year, plantId);
+
+        return response;
+    }
+
     async getChartByTypeGrowatt(login: string, password: string, date: string, type: string, plantId: string, deviceTypeName: string, deviceSN: string, userId: string) {
         const existingUser = await prismaClient.user.findFirst({ where: { id: userId } });
 
@@ -342,6 +376,60 @@ class SolarPlantService {
         }
 
         const response = await getChartByType(login, password, date, type, plantId, deviceTypeName, deviceSN);
+
+        return response;
+    }
+
+    async getChartByTypeAbb(login: string, password: string, date: string, type: string, plantId: string, userId: string) {
+        const existingUser = await prismaClient.user.findFirst({ where: { id: userId } });
+
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
+
+        const existingSolarPlant = await prismaClient.plant.findFirst({
+            where: {
+                login: login,
+                password: password,
+            }
+        });
+
+        if (!existingSolarPlant) {
+            throw new Error('Planta Solar não encontrada no banco de dados.');
+        }
+
+        if (existingSolarPlant.userId !== existingUser.id && !existingUser.isAdmin) {
+            throw new Error('Você não tem permissão para acessar a planta solar.');
+        }
+
+        const response = await getChartAbbByType(login, password, date, type, plantId);
+
+        return response;
+    }
+
+    async getChartByTypeDeye(login: string, password: string, date: string, type: string, plantId: string, userId: string) {
+        const existingUser = await prismaClient.user.findFirst({ where: { id: userId } });
+
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
+
+        const existingSolarPlant = await prismaClient.plant.findFirst({
+            where: {
+                login: login,
+                password: password,
+            }
+        });
+
+        if (!existingSolarPlant) {
+            throw new Error('Planta Solar não encontrada no banco de dados.');
+        }
+
+        if (existingSolarPlant.userId !== existingUser.id && !existingUser.isAdmin) {
+            throw new Error('Você não tem permissão para acessar a planta solar.');
+        }
+
+        const response = await getChartDeyeByType(login, password, date, type, plantId);
 
         return response;
     }
