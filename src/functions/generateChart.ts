@@ -1,6 +1,6 @@
-import QuickChart from "quickchart-js";
-import * as ChartJs from 'chart.js';
-import ChartDataLabels from 'chartjs-plugin-datalabels';
+//import QuickChart from "quickchart-js";
+
+const QuickChart = require('quickchart-js');
 
 export const generateChart = async (powerData: number[], estimatedGeneration: number) => {
     const months = powerData.map((_, i) => `Mês ${i + 1}`);
@@ -25,19 +25,22 @@ export const generateChart = async (powerData: number[], estimatedGeneration: nu
             ],
         },
         options: {
+            responsive: true,
             plugins: {
                 legend: {
                     position: 'bottom',
                 },
                 datalabels: {
+                    display: true,
                     color: '#000',
-                    anchor: 'center',
-                    align: 'center',
                     font: {
-                        size: 12,
                         weight: 'bold',
+                        size: 12
                     },
-                    formatter: (value: number) => `${value} kWh`,
+                    formatter: (value: number) => `${value.toFixed(2)} kWh`,
+                    anchor: 'center',
+                    align: 'middle',
+                    rotation: 90,
                 },
             },
             scales: {
@@ -56,13 +59,11 @@ export const generateChart = async (powerData: number[], estimatedGeneration: nu
                 },
             },
         },
-        plugins: [ChartDataLabels],
     });
 
     chart.setWidth(800);
     chart.setHeight(400);
 
-    const chartUrl = chart.getUrl();
     const base64Image = await chart.toDataUrl();
 
     return base64Image;

@@ -1,4 +1,4 @@
-import { hash, compare } from 'bcryptjs';
+import { hash, compare,  } from 'bcryptjs';
 import prismaClient from "../prisma";
 import { generateAccessToken } from '../functions/generateAccessToken';
 

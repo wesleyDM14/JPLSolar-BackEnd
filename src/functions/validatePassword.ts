@@ -1,3 +1,4 @@
+import { hash } from "bcryptjs";
 
 export function validatePassword(password: string, confirmPassword: string): void {
     if (password !== confirmPassword) {
