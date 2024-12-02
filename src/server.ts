@@ -5,6 +5,7 @@ import 'express-async-errors';
 import { setupGracefulShutdown } from "./functions/shutdown";
 import prismaClient from "./prisma";
 import { router } from "./routes";
+import { fetchSolisData } from "./functions/getSolisParams";
 
 const app = express();
 const PORT = process.env.PORT || 3333;
@@ -26,7 +27,9 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 
 //Rota de teste
 app.get('/up', async (req, res) => {
-    res.send('Up');
+    //res.send('Servidor online!');
+    const response = await fetchSolisData('cwob@live.com', 'solarcarlos');
+    res.send(response);
 });
 
 //Inicialização do servidor

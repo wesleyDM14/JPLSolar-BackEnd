@@ -7,6 +7,7 @@ import { generateChart } from "./generateChart";
 import { formatPhone } from "./formarString";
 import { fetchAbbData, getChartAbbByType } from "./getAbbParams";
 import { fetchDeyeData, getChartDeyeByType } from "./getDeyeParams";
+import { fetchCanadianData, getChartCanadianByType } from "./getCanadianParams";
 
 const growattApi = new growatt({});
 const growattApiC = new growatt({ indexCandI: true });
@@ -70,7 +71,15 @@ export async function generateSolarPlantReport(solarPlantId: string, userId: str
             let chartResponse = await getChartAbbByType(existingSolarPlant.login, existingSolarPlant.password, year.toString(), 'mouth', plantId);
 
             powerData = chartResponse.chart.energy;
+        } else if (solarPlantInversor === Inversor.CANADIAN) {
+            const apiResponse = await fetchCanadianData(existingSolarPlant.login, existingSolarPlant.password);
+            solarPlantParams = { deviceData: '' };
+            solarPlantParams.deviceData = apiResponse.totalData;
 
+            let plantId = apiResponse.plantData.id;
+            let chartResponse = await getChartCanadianByType(existingSolarPlant.login, existingSolarPlant.password, year.toString(), 'mouth', plantId);
+
+            powerData = chartResponse.chart.energy;
         } else if (solarPlantInversor === Inversor.DEYE) {
             const apiResponse = await fetchDeyeData(existingSolarPlant.login, existingSolarPlant.password);
             solarPlantParams = { deviceData: '' };

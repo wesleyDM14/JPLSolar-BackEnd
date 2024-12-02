@@ -228,6 +228,8 @@ class SolarPlantController {
 
             if (inversor === Inversor.ABB) {
                 response = await solarPlantService.getAbbParams(login, password, req.user.id);
+            } else if (inversor === Inversor.CANADIAN) {
+                response = await solarPlantService.getCanadianParams(login, password, req.user.id);
             } else if (inversor === Inversor.DEYE) {
                 response = await solarPlantService.getDeyeParams(login, password, req.user.id);
             } else if (inversor === Inversor.GROWATT) {
@@ -260,6 +262,8 @@ class SolarPlantController {
 
             if (inversor === Inversor.ABB) {
                 response = await solarPlantService.getErrorDataListAbb(login, password, year, plantId, req.user.id);
+            } else if (inversor === Inversor.CANADIAN) {
+                response = await solarPlantService.getErrorDataListCanadian(login, password, year, plantId, req.user.id);
             } else if (inversor === Inversor.DEYE) {
                 response = await solarPlantService.getErrorDataListDeye(login, password, year, plantId, req.user.id);
             } else if (inversor === Inversor.GROWATT) {
@@ -292,6 +296,8 @@ class SolarPlantController {
 
             if (inversor === Inversor.ABB) {
                 response = await solarPlantService.getChartByTypeAbb(login, password, date, type, plantId, req.user.id);
+            } else if (inversor === Inversor.CANADIAN) {
+                response = await solarPlantService.getChartByTypeCanadian(login, password, date, type, plantId, req.user.id);
             } else if (inversor === Inversor.DEYE) {
                 response = await solarPlantService.getChartByTypeDeye(login, password, date, type, plantId, req.user.id);
             } else if (inversor === Inversor.GROWATT) {

@@ -3,6 +3,7 @@ import prismaClient from "../prisma";
 import { fetchGrowattData, getChartByType, getErrorDataListForYear } from "../functions/getGrowattParams";
 import { fetchAbbData, getAbbErrorDataListForYear, getChartAbbByType } from "../functions/getAbbParams";
 import { fetchDeyeData, getChartDeyeByType, getDeyeErrorDataListForYear } from "../functions/getDeyeParams";
+import { fetchCanadianData, getCanadianErrorDataListForYear, getChartCanadianByType } from "../functions/getCanadianParams";
 
 class SolarPlantService {
 
@@ -217,6 +218,33 @@ class SolarPlantService {
         return response;
     }
 
+    async getCanadianParams(login: string, password: string, userId: string) {
+        const existingUser = await prismaClient.user.findFirst({ where: { id: userId } });
+
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
+
+        const existingSolarPlant = await prismaClient.plant.findFirst({
+            where: {
+                login: login,
+                password: password,
+            }
+        });
+
+        if (!existingSolarPlant) {
+            throw new Error('Planta Solar não encontrada no banco de dados.');
+        }
+
+        if (existingSolarPlant.userId !== existingUser.id && !existingUser.isAdmin) {
+            throw new Error('Você não tem permissão para acessar a planta solar.');
+        }
+
+        const response = await fetchCanadianData(login, password);
+
+        return response;
+    }
+
     async getDeyeParams(login: string, password: string, userId: string) {
         const existingUser = await prismaClient.user.findFirst({ where: { id: userId } });
 
@@ -326,6 +354,33 @@ class SolarPlantService {
         return response;
     }
 
+    async getErrorDataListCanadian(login: string, password: string, year: number, plantId: string, userId: string) {
+        const existingUser = await prismaClient.user.findFirst({ where: { id: userId } });
+
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
+
+        const existingSolarPlant = await prismaClient.plant.findFirst({
+            where: {
+                login: login,
+                password: password,
+            }
+        });
+
+        if (!existingSolarPlant) {
+            throw new Error('Planta Solar não encontrada no banco de dados.');
+        }
+
+        if (existingSolarPlant.userId !== existingUser.id && !existingUser.isAdmin) {
+            throw new Error('Você não tem permissão para acessar a planta solar.');
+        }
+
+        const response = await getCanadianErrorDataListForYear(login, password, year, plantId);
+
+        return response;
+    }
+
     async getErrorDataListDeye(login: string, password: string, year: number, plantId: string, userId: string) {
         const existingUser = await prismaClient.user.findFirst({ where: { id: userId } });
 
@@ -403,6 +458,33 @@ class SolarPlantService {
         }
 
         const response = await getChartAbbByType(login, password, date, type, plantId);
+
+        return response;
+    }
+
+    async getChartByTypeCanadian(login: string, password: string, date: string, type: string, plantId: string, userId: string) {
+        const existingUser = await prismaClient.user.findFirst({ where: { id: userId } });
+
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
+
+        const existingSolarPlant = await prismaClient.plant.findFirst({
+            where: {
+                login: login,
+                password: password,
+            }
+        });
+
+        if (!existingSolarPlant) {
+            throw new Error('Planta Solar não encontrada no banco de dados.');
+        }
+
+        if (existingSolarPlant.userId !== existingUser.id && !existingUser.isAdmin) {
+            throw new Error('Você não tem permissão para acessar a planta solar.');
+        }
+
+        const response = await getChartCanadianByType(login, password, date, type, plantId);
 
         return response;
     }

@@ -1,23 +1,28 @@
-import { ChartConfiguration } from "chart.js";
-import { ChartJSNodeCanvas } from "chartjs-node-canvas";
+import QuickChart from "quickchart-js";
+import * as ChartJs from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 
 export const generateChart = async (powerData: number[], estimatedGeneration: number) => {
-    const width = 800;  // Largura do gráfico
-    const height = 400; // Altura do gráfico
-    const chartLib = new ChartJSNodeCanvas({ width, height });
+    const months = powerData.map((_, i) => `Mês ${i + 1}`);
+    const estimatedProdution = Array.from({ length: powerData.length }, () => estimatedGeneration);
 
-    const months = powerData.map((data, i) => i + 1);
-    const estimatedProduction = Array.from({ length: powerData.length }, () => estimatedGeneration);
-
-    const configuration: ChartConfiguration<'bar'> = {
+    const chart = new QuickChart();
+    chart.setConfig({
         type: 'bar',
         data: {
-            datasets: [
-                { label: 'Real', data: powerData, backgroundColor: 'rgba(75, 192, 192, 0.2)' },
-                { label: 'Estimado', data: estimatedProduction, backgroundColor: 'rgba(255, 99, 132, 0.2)' },
-            ],
             labels: months,
+            datasets: [
+                {
+                    label: 'Real',
+                    data: powerData,
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                },
+                {
+                    label: 'Estimado',
+                    data: estimatedProdution,
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                },
+            ],
         },
         options: {
             plugins: {
@@ -25,15 +30,14 @@ export const generateChart = async (powerData: number[], estimatedGeneration: nu
                     position: 'bottom',
                 },
                 datalabels: {
+                    color: '#000',
                     anchor: 'center',
                     align: 'center',
-                    color: '#333',
-
                     font: {
-                        size: 12
+                        size: 12,
+                        weight: 'bold',
                     },
-                    rotation: 270,
-                    formatter: (value: number) => `${value.toFixed(2)} kWh`,
+                    formatter: (value: number) => `${value} kWh`,
                 },
             },
             scales: {
@@ -53,8 +57,13 @@ export const generateChart = async (powerData: number[], estimatedGeneration: nu
             },
         },
         plugins: [ChartDataLabels],
-    };
+    });
 
-    const imageBuffer = await chartLib.renderToBuffer(configuration);
-    return `data:image/png;base64,${imageBuffer.toString('base64')}`;
+    chart.setWidth(800);
+    chart.setHeight(400);
+
+    const chartUrl = chart.getUrl();
+    const base64Image = await chart.toDataUrl();
+
+    return base64Image;
 }

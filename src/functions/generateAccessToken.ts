@@ -1,4 +1,4 @@
-import { sign } from "jsonwebtoken"
+import { sign } from "jsonwebtoken";
 
 export const generateAccessToken = (userId: string): string => {
     const secret = process.env.JWT_SECRET;
