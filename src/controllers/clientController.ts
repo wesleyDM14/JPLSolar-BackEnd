@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-
 import ClientService from "../services/clientService";
+import { UserRole } from "@prisma/client";
 
 const clientService = new ClientService();
 
@@ -29,7 +29,7 @@ class ClientController {
 
     async getClients(req: Request, res: Response) {
         try {
-            if (req.user.isAdmin) {
+            if (req.user.userRole !== UserRole.ADMIN) {
                 return res.status(403).json({ message: 'Somente administradores podem acessar todos os clientes.' });
             }
 
@@ -63,7 +63,7 @@ class ClientController {
 
     async getClientsByUserId(req: Request, res: Response) {
         try {
-            if (req.user.isAdmin) {
+            if (req.user.userRole !== UserRole.ADMIN) {
                 return res.status(403).json({ message: 'Somente administradores podem acessar os clientes.' });
             }
 
@@ -115,13 +115,13 @@ class ClientController {
                 return res.status(400).json({ message: 'ID não fornecido.' });
             }
 
-            const { name, phone, address } = req.body;
+            const { name, phone, address, login, password } = req.body;
 
             if (!name) {
                 return res.status(400).json({ message: 'Nome de Cliente é obrigatório.' });
             }
 
-            await clientService.updateClient(clientId, req.user.id, name, phone, address);
+            await clientService.updateClient(clientId, req.user.id, name, phone, address, login, password);
             return res.status(200).json({ message: 'Cliente atualizado com sucesso.' });
         } catch (error: unknown) {
             if (error instanceof Error) {

@@ -16,33 +16,25 @@ model User {
     password      String
     failedAttemps Int       @default(0)
     lockUntil     DateTime?
-    isAdmin       Boolean   @default(false)
+    role          UserRole  @default(CLIENTE)
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    //Relacionamentos
-    clients      Client[]
-    contracts    Contract[]
-    Plant        Plant[]
-    Notification Notification[]
-}
-
-model Client {
-    id      String  @id @default(uuid())
-    name    String
     phone   String?
     address String?
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    //Relacionamento com a tabela User
-    userId String
-    User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    //Relacionamento com plantas
+    plantAsClient   Plant[] @relation("ClientPlants")
+    plantAsMontador Plant[] @relation("MontadorPlants")
 
     //Relacionamentos
-    plants Plant[]
+    contracts     Contract[]
+    notifications Notification[]
+
+    montadorId String?
+    montador   User?   @relation("MontadorClientes", fields: [montadorId], references: [id], onDelete: Cascade)
+    clientes   User[]  @relation("MontadorClientes")
 }
 
 model Plant {
@@ -66,13 +58,13 @@ model Plant {
     updatedAt DateTime @updatedAt
 
     //Relacionamento com a tabela cliente
-    clientId String
-    client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+    clientId String?
+    client   User?   @relation("ClientPlants", fields: [clientId], references: [id], onDelete: Cascade)
 
-    userId String
-    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    montadorId String
+    montador   User   @relation("MontadorPlants", fields: [montadorId], references: [id], onDelete: Cascade)
 
-    @@unique([code, userId])
+    @@unique([code, montadorId])
 }
 
 model Contract {
@@ -180,4 +172,11 @@ enum Inversor {
     CANADIAN
     DEYE
     GROWATT
+}
+
+enum UserRole {
+    ADMIN
+    MONTADOR
+    PARCEIRO
+    CLIENTE
 }

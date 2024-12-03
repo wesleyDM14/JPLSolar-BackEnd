@@ -148,7 +148,7 @@ class DashboardService {
 
     async getDashBoardData(userId: string) {
         const plants = await prismaClient.plant.findMany({
-            where: { userId },
+            where: { montadorId: userId },
             include: {
                 client: true,
             }
@@ -158,7 +158,7 @@ class DashboardService {
             id: plant.id,
             status: plant.status,
             eTotal: plant.eTotal,
-            clientName: plant.client.name,
+            clientName: plant.client?.name,
             solarPlantCode: plant.code,
         }))
 

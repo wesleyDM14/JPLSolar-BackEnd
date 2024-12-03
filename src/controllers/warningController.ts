@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import WarningService from "../services/warningService";
+import { UserRole } from "@prisma/client";
 
 const warningService = new WarningService();
 
@@ -9,7 +10,7 @@ class WarningController {
         try {
             const { userId, message } = req.body;
 
-            if (!req.user.isAdmin) {
+            if (req.user.userRole !== UserRole.ADMIN) {
                 return res.status(403).json({ message: 'Apenas administradores podem cadastrar novos avisos.' });
             }
 
@@ -32,7 +33,7 @@ class WarningController {
 
     async getWarnings(req: Request, res: Response) {
         try {
-            if (!req.user.isAdmin) {
+            if (req.user.userRole !== UserRole.ADMIN) {
                 return res.status(403).json({ message: 'Apenas administradores podem buscar todos os usuários.' });
             }
 
@@ -57,7 +58,7 @@ class WarningController {
                 return res.status(400).json({ message: 'ID não fornecido.' });
             }
 
-            if (req.user.id !== userId && !req.user.isAdmin) {
+            if (req.user.id !== userId && req.user.userRole !== UserRole.ADMIN) {
                 return res.status(403).json({ message: 'Você não possui autorização para acessar os avisos.' });
             }
 
@@ -97,7 +98,9 @@ class WarningController {
                 return res.status(400).json({ message: 'ID não fornecido.' });
             }
 
-            const warning = await warningService.getWarningById(warningId, req.user.id, req.user.isAdmin);
+            let isAdmin = req.user.userRole === UserRole.ADMIN;
+
+            const warning = await warningService.getWarningById(warningId, req.user.id, isAdmin);
             return res.status(200).json(warning);
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -124,7 +127,9 @@ class WarningController {
                 return res.status(400).json({ message: 'Dados de atualização Inválidos.' });
             }
 
-            await warningService.updateWarning(warningId, isReaded, req.user.id, req.user.isAdmin);
+            let isAdmin = req.user.userRole === UserRole.ADMIN;
+
+            await warningService.updateWarning(warningId, isReaded, req.user.id, isAdmin);
             return res.status(200).json({ message: 'Aviso atualizado com sucesso.' });
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -145,7 +150,9 @@ class WarningController {
                 return res.status(400).json({ message: 'ID não fornecido.' });
             }
 
-            await warningService.deleteWarning(warningId, req.user.id, req.user.isAdmin);
+            let isAdmin = req.user.userRole === UserRole.ADMIN;
+
+            await warningService.deleteWarning(warningId, req.user.id, isAdmin);
             return res.status(200).json({ message: 'Aviso deletado com sucesso.' });
         } catch (error: unknown) {
             if (error instanceof Error) {

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 
 import SolarPlantService from "../services/solarPlantService";
-import { Inversor } from "@prisma/client";
+import { Inversor, UserRole } from "@prisma/client";
 import { generateSolarPlantReport } from "../functions/generateSolarPlantReport";
 
 const solarPlantService = new SolarPlantService();
@@ -53,7 +53,7 @@ class SolarPlantController {
 
     async getSolarPlants(req: Request, res: Response) {
         try {
-            if (!req.user.isAdmin) {
+            if (req.user.userRole !== UserRole.ADMIN) {
                 return res.status(403).json({ message: 'Apenas Administradores podem recuperar todos as plantas cadastradas.' });
             }
 
@@ -88,7 +88,7 @@ class SolarPlantController {
 
     async getSolarPlantsByUserId(req: Request, res: Response) {
         try {
-            if (req.user.isAdmin) {
+            if (req.user.userRole !== UserRole.ADMIN) {
                 return res.status(403).json({ message: 'Somente administradores podem acessar as plantas solares.' });
             }
 
@@ -220,7 +220,7 @@ class SolarPlantController {
                 return res.status(400).json({ message: 'Parâmetros da url estão faltando.' });
             }
 
-            if (!req.user.isAdmin && userId !== req.user.id) {
+            if (req.user.userRole !== UserRole.ADMIN && userId !== req.user.id) {
                 return res.status(403).json({ error: 'Acesso negado: Planta Solar não pertence ao usuário.' });
             }
 

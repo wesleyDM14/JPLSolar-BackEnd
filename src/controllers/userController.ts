@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 
 import UserService from "../services/userService";
 import { validatePassword } from "../functions/validatePassword";
+import { UserRole } from "@prisma/client";
 
 const userService = new UserService();
 
@@ -33,7 +34,7 @@ class UserController {
         try {
             const { nome, login, password, confirmPassword } = req.body;
 
-            if (!req.user.isAdmin) {
+            if (req.user.userRole !== UserRole.ADMIN) {
                 return res.status(403).json({ message: 'Apenas administradores podem cadastrar novos usuários.' });
             }
 
@@ -59,7 +60,7 @@ class UserController {
     async getUsers(req: Request, res: Response) {
         try {
 
-            if (!req.user.isAdmin) {
+            if (req.user.userRole !== UserRole.ADMIN) {
                 return res.status(403).json({ message: 'Apenas administradores podem buscar todos os usuários.' });
             }
 
@@ -84,7 +85,7 @@ class UserController {
                 return res.status(400).json({ message: 'ID não fornecido.' });
             }
 
-            if (req.user.id !== userId && !req.user.isAdmin) {
+            if (req.user.id !== userId && req.user.userRole !== UserRole.ADMIN) {
                 return res.status(403).json({ message: 'Você não possui autorização para acessar o usuário.' });
             }
 
@@ -122,7 +123,7 @@ class UserController {
             const userId = req.params.userId;
             const { newPassword, confirmPassword, nome } = req.body;
 
-            if (req.user.id !== userId && !req.user.isAdmin) {
+            if (req.user.id !== userId && req.user.userRole !== UserRole.ADMIN) {
                 return res.status(403).json({ message: 'Você não possui autorização para alterar o usuário.' });
             }
 
@@ -148,7 +149,7 @@ class UserController {
 
     async deleteUser(req: Request, res: Response) {
         try {
-            if (!req.user.isAdmin) {
+            if (req.user.userRole !== UserRole.ADMIN) {
                 return res.status(403).json({ message: 'Apenas administradores podem deletar usuários.' });
             }
 

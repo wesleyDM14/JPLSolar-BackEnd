@@ -1,3 +1,4 @@
+import { hash } from "bcryptjs";
 import prismaClient from "../prisma";
 
 class ClientService {
@@ -9,12 +10,27 @@ class ClientService {
             throw new Error('Usuário não encontrado no banco de dados.');
         }
 
-        const newClient = await prismaClient.client.create({
+        let login = name.split(" ")[0];
+
+        let password = login;
+
+        const existente = await prismaClient.user.findUnique({ where: { login } });
+
+        if (existente) {
+            login = `${login}${Date.now()}`;
+        }
+
+        let hashPassword = await hash(password, 8);
+
+        const newClient = await prismaClient.user.create({
             data: {
                 name: name,
                 phone: phone ? phone : null,
                 address: address ? address : null,
-                userId: existingUser.id
+                montadorId: existingUser.id,
+                login: login,
+                password: hashPassword,
+                role: "CLIENTE",
             }
         });
 
@@ -22,7 +38,12 @@ class ClientService {
     }
 
     async getClients() {
-        const clients = await prismaClient.client.findMany();
+        const clients = await prismaClient.user.findMany({
+            where: {
+                role: "CLIENTE",
+            }
+        });
+
         return clients;
     }
 
@@ -33,7 +54,14 @@ class ClientService {
             throw new Error('Usuário não encontrado no banco de dados.');
         }
 
-        const clients = await prismaClient.client.findMany({ where: { userId: existingUser.id }, orderBy: {name: "asc"} });
+        const clients = await prismaClient.user.findMany({
+            where: {
+                montadorId: existingUser.id,
+                role: "CLIENTE",
+            },
+            orderBy: { name: "asc" },
+        });
+
         return clients;
     }
 
@@ -44,43 +72,57 @@ class ClientService {
             throw new Error('Usuário não encontrado no banco de dados.');
         }
 
-        const existingClient = await prismaClient.client.findUnique({ where: { id: clientId } });
+        const existingClient = await prismaClient.user.findUnique({
+            where: { id: clientId }
+        });
 
         if (!existingClient) {
             throw new Error('Cliente não encontrado no banco de dados.');
         }
 
-        if (existingClient.userId !== existingUser.id && !existingUser.isAdmin) {
+        if (existingClient.role !== "CLIENTE") {
+            throw new Error('Usuário não listado como cliente.');
+        }
+
+        if (existingClient.montadorId !== existingUser.id && existingUser.role !== "ADMIN") {
             throw new Error('Você não tem permissão para acessar este cliente.');
         }
 
         return existingClient;
     }
 
-    async updateClient(clientId: string, userId: string, nome: string, phone: string, address: string) {
+    async updateClient(clientId: string, userId: string, nome: string, phone: string, address: string, login: string, password: string) {
         const existingUser = await prismaClient.user.findUnique({ where: { id: userId } });
 
         if (!existingUser) {
             throw new Error('Usuário não encontrado no banco de dados.');
         }
 
-        const existingClient = await prismaClient.client.findUnique({ where: { id: clientId } });
+        const existingClient = await prismaClient.user.findUnique({ where: { id: clientId } });
 
-        if (!existingClient) {
+        if (!existingClient || existingClient.role !== "CLIENTE") {
             throw new Error('Cliente não encontrado no banco de dados.');
         }
 
-        if (existingClient.userId !== existingUser.id && !existingUser.isAdmin) {
+        if (existingClient.montadorId !== existingUser.id && existingUser.role !== "ADMIN") {
             throw new Error('Você não tem permissão para editar este cliente.');
         }
 
-        await prismaClient.client.update({
+        let hashPassword = null;
+
+        if (password) {
+            hashPassword = await hash(password, 8);
+        }
+
+        await prismaClient.user.update({
             where: { id: existingClient.id },
             data: {
                 name: nome ? nome : existingClient.name,
                 address: address ? address : existingClient.address,
-                phone: phone ? phone : existingClient.phone
-            }
+                phone: phone ? phone : existingClient.phone,
+                login: login ? login : existingClient.login,
+                password: hashPassword ? hashPassword : existingClient.password,
+            },
         });
 
         return;
@@ -93,17 +135,17 @@ class ClientService {
             throw new Error('Usuário não encontrado no banco de dados.');
         }
 
-        const existingClient = await prismaClient.client.findUnique({ where: { id: clientId } });
+        const existingClient = await prismaClient.user.findUnique({ where: { id: clientId } });
 
-        if (!existingClient) {
+        if (!existingClient || existingClient.role !== "CLIENTE") {
             throw new Error('Cliente não encontrado no banco de dados.');
         }
 
-        if (existingClient.userId !== existingUser.id && !existingUser.isAdmin) {
+        if (existingClient.montadorId !== existingUser.id && existingUser.role !== "ADMIN") {
             throw new Error('Você não tem permissão para deletar este cliente.');
         }
 
-        await prismaClient.client.delete({ where: { id: clientId } });
+        await prismaClient.user.delete({ where: { id: clientId } });
         return;
     }
 }

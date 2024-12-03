@@ -51,7 +51,7 @@ class ContractService {
                         cidade: cidade,
                         uf: uf,
                         cep: cep
-                    }
+                    },
                 });
 
                 //Cria avalista e endereço do avalista, se houver
@@ -145,26 +145,52 @@ class ContractService {
     }
 
     //Read All for user
-    async getContractsByUser(userId: string) {
-        const userExisting = await prismaClient.user.findUnique({ where: { id: userId } });
+    async getContractsByUser(userId: string, loggedUserId: string) {
+        const userExisting = await prismaClient.user.findUnique({
+            where: { id: loggedUserId },
+            select: {
+                id: true,
+                role: true,
+            }
+        });
 
         if (!userExisting) {
             throw new Error('Usuário não encontrado no Banco de Dados.');
         }
 
-        const contractsByUser = await prismaClient.contract.findMany({
-            where: { userId: userExisting.id },
-            include: {
-                endereco: true,  // Inclui os dados do endereço do contrato
-                avalista: {
-                    include: {
-                        endereco: true  // Inclui o endereço do avalista
-                    }
-                }
-            }
-        });
+        if (userExisting.role === "ADMIN") {
+            return await prismaClient.contract.findMany({
+                where: { userId: userId },
+                include: {
+                    endereco: true,
+                    avalista: {
+                        include: {
+                            endereco: true,
+                        },
+                    },
+                },
 
-        return contractsByUser;
+            });
+        }
+
+        if (userExisting.role === 'MONTADOR') {
+            return await prismaClient.contract.findMany({
+                where: {
+                    userId: userId,
+                    User: {
+                        montadorId: userExisting.id,
+                    },
+                },
+                include: {
+                    endereco: true,
+                    avalista: {
+                        include: {
+                            endereco: true,
+                        },
+                    },
+                },
+            });
+        }
     }
 
     //Read unique
@@ -191,8 +217,22 @@ class ContractService {
             throw new Error('Contrato não encontrado no Banco de Dados.');
         }
 
-        if (contractExisting.userId !== userExisting.id && !userExisting.isAdmin) {
-            throw new Error('Você não tem permissão para acessar este contrato.');
+        if (contractExisting.userId !== userExisting.id && userExisting.role !== "ADMIN") {
+            if (userExisting.role === "MONTADOR") {
+                const partner = await prismaClient.user.findUnique({
+                    where: { id: contractExisting.userId },
+                    select: {
+                        id: true,
+                        montadorId: true,
+                    },
+                });
+
+                if (partner?.montadorId !== userExisting.id) {
+                    throw new Error('Você não tem permissão para acessar este contrato.');
+                }
+            } else {
+                throw new Error('Você não tem permissão para acessar este contrato.');
+            }
         }
 
         return contractExisting;
@@ -254,8 +294,22 @@ class ContractService {
                     throw new Error('Contrato não encontrado.');
                 }
 
-                if (existingContract.userId !== userExisting.id && !userExisting.isAdmin) {
-                    throw new Error('Você não tem permissão para editar este contrato.');
+                if (existingContract.userId !== userExisting.id && userExisting.role !== "ADMIN") {
+                    if (userExisting.role === "MONTADOR") {
+                        const partner = await prismaClient.user.findUnique({
+                            where: { id: existingContract.userId },
+                            select: {
+                                id: true,
+                                montadorId: true,
+                            },
+                        });
+
+                        if (partner?.montadorId !== userExisting.id) {
+                            throw new Error('Você não tem permissão para atualizar este contrato.');
+                        }
+                    } else {
+                        throw new Error('Você não tem permissão para atualizar este contrato.');
+                    }
                 }
 
                 // Atualizar endereço do contrato
@@ -352,21 +406,36 @@ class ContractService {
             throw new Error('Usuário não encontrado no Banco de Dados.');
         }
 
-        const contractExisting = await prismaClient.contract.findFirst({ where: { id: contractId } });
+        const contractExisting = await prismaClient.contract.findUnique({
+            where: { id: contractId },
+        });
 
         if (!contractExisting) {
             throw new Error('Contrato não encontrado no Banco de Dados.');
         }
 
-        if (contractExisting.userId !== userExisting.id && !userExisting.isAdmin) {
-            throw new Error('Você não tem permissão para acessar este contrato.');
+        if (contractExisting.userId !== userExisting.id && userExisting.role !== "ADMIN") {
+            if (userExisting.role === "MONTADOR") {
+                const partner = await prismaClient.user.findUnique({
+                    where: { id: contractExisting.userId },
+                    select: {
+                        id: true,
+                        montadorId: true,
+                    },
+                });
+
+                if (partner?.montadorId !== userExisting.id) {
+                    throw new Error('Você não tem permissão para deletar este contrato.');
+                }
+            } else {
+                throw new Error('Você não tem permissão para deletar este contrato.');
+            }
         }
 
-        let enderecoId = contractExisting.enderecoId;
-
-        await prismaClient.contract.delete({ where: { id: contractId } });
-
-        await prismaClient.endereco.delete({ where: { id: enderecoId } });
+        // Excluir o contrato
+        await prismaClient.contract.delete({
+            where: { id: contractId },
+        });
 
         return;
     }

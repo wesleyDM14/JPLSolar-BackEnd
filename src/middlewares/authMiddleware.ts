@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { verify } from 'jsonwebtoken';
 
 import prismaClient from "../prisma";
+import { UserRole } from "@prisma/client";
 
 interface Payload {
     id: string;
@@ -25,7 +26,7 @@ export const authenticateUser = async (req: Request, res: Response, next: NextFu
             return res.status(404).json({ message: 'Usuário não encontrado.' });
         }
 
-        req.user = { id: user.id, isAdmin: user.isAdmin };
+        req.user = { id: user.id, userRole: user.role };
         return next();
     } catch (error) {
         return res.status(401).json({ message: 'Token de Acesso Inválido ou Expirado' });
@@ -33,7 +34,7 @@ export const authenticateUser = async (req: Request, res: Response, next: NextFu
 }
 
 export const IsAdminUser = async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user || !req.user.isAdmin) {
+    if (!req.user || req.user.userRole !== UserRole.ADMIN) {
         return res.status(403).json({ message: 'Acesso negado. Esta rota é restrita apenas para administradores.' });
     }
     return next();

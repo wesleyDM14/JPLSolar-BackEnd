@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import ContractService from "../services/contractService";
 import { generateContractPDF } from "../functions/generateContractPDF";
 import { generatePromissoriaPDF } from "../functions/generatePromissoriaPDF";
+import { UserRole } from "@prisma/client";
 
 const contractService = new ContractService();
 
@@ -78,7 +79,7 @@ class ContractController {
 
     async getContracts(req: Request, res: Response) {
         try {
-            if (!req.user.isAdmin) {
+            if (req.user.userRole !== UserRole.ADMIN) {
                 return res.status(403).json({ message: 'Apenas administradores podem acessar todos os contratos.' });
             }
             const contracts = await contractService.getContracts();
@@ -96,7 +97,7 @@ class ContractController {
 
     async getSelfUserContracts(req: Request, res: Response) {
         try {
-            const contracts = await contractService.getContractsByUser(req.user.id);
+            const contracts = await contractService.getContractsByUser(req.user.id, req.user.id);
             return res.status(200).json(contracts);
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -111,8 +112,8 @@ class ContractController {
 
     async getContractsByUser(req: Request, res: Response) {
         try {
-            if (req.user.isAdmin) {
-                return res.status(403).json({ message: 'Somente administradores podem acessar os clientes.' });
+            if (req.user.userRole !== UserRole.ADMIN && req.user.userRole !== UserRole.MONTADOR) {
+                return res.status(403).json({ message: 'Somente administradores podem acessar os contratos de seus parceiros.' });
             }
 
             const userId = req.params.userId;
@@ -121,7 +122,7 @@ class ContractController {
                 return res.status(400).json({ message: 'ID de usuário não fornecido.' });
             }
 
-            const contracts = await contractService.getContractsByUser(userId);
+            const contracts = await contractService.getContractsByUser(userId, req.user.id);
             return res.status(200).json(contracts);
         } catch (error: unknown) {
             if (error instanceof Error) {

@@ -52,7 +52,7 @@ class UserService {
         });
 
         const accessToken = generateAccessToken(userLogin.id);
-        return { accessToken, isAdmin: userLogin.isAdmin };
+        return { accessToken, userRole: userLogin.role };
     }
 
     async createUser(name: string, login: string, password: string) {
@@ -73,6 +73,7 @@ class UserService {
                 login: login,
                 password: passwordHash,
                 name: name ? name : null,
+                role: 'MONTADOR',
             }
         });
 
@@ -89,7 +90,7 @@ class UserService {
             where: { id: userId },
             select: {
                 id: true,
-                isAdmin: true,
+                role: true,
                 name: true,
                 login: true,
             } 
