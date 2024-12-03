@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import DashboardService from "../services/dashboardService";
-import { Inversor } from "@prisma/client";
 
 const dashboardService = new DashboardService();
 

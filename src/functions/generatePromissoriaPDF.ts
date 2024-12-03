@@ -2,6 +2,7 @@ import { formatDate } from './generateDateExtenso';
 import prismaClient from '../prisma';
 import { generatePdf } from 'html-pdf-node';
 import { formatCEP, formatCPF } from './formarString';
+import { UserRole } from '@prisma/client';
 
 const formatadorMoeda = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
@@ -26,7 +27,7 @@ export async function generatePromissoriaPDF(contractId: string, userId: string,
             throw new Error('Contrato não encontrado no Banco de Dados.');
         }
 
-        if (existingUser.id !== contractExisting.userId && !existingUser.isAdmin) {
+        if (existingUser.id !== contractExisting.userId && existingUser.role !== UserRole.ADMIN) {
             throw new Error('Você não tem permissão para acessar esse contrato.');
         }
 

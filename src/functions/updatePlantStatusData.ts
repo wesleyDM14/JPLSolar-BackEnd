@@ -23,7 +23,7 @@ async function updatePlantData() {
         const users = await prismaClient.user.findMany();
 
         const solarPlants = await Promise.all(
-            users.map(user => prismaClient.plant.findMany({ where: { userId: user.id } }))
+            users.map(user => prismaClient.plant.findMany({ where: { montadorId: user.id } }))
         ).then(results => results.flat());
 
         await Promise.all(

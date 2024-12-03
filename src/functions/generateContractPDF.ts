@@ -2,6 +2,7 @@ import { addMonths } from 'date-fns';
 import prismaClient from '../prisma';
 import { formatCEP, formatCPF, formatRG } from './formarString';
 import { generatePdf } from 'html-pdf-node';
+import { UserRole } from '@prisma/client';
 
 const extenso = require('numero-por-extenso');
 
@@ -30,7 +31,7 @@ export async function generateContractPDF(contractId: string, userId: string, ca
             throw new Error('Contrato não encontrado no Banco de Dados.');
         }
 
-        if (existingUser.id !== contractExisting.userId && !existingUser.isAdmin) {
+        if (existingUser.id !== contractExisting.userId && existingUser.role !== UserRole.ADMIN) {
             throw new Error('Você não tem permissão para acessar esse contrato.');
         }
 

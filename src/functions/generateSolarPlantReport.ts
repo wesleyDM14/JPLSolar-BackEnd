@@ -54,7 +54,7 @@ export async function generateSolarPlantReport(solarPlantId: string, userId: str
             throw new Error('Usuário não encontrado no banco de dados.');
         }
 
-        if (existingSolarPlant.client.userId !== existingUser.id && !existingUser.isAdmin) {
+        if (existingSolarPlant.client?.montadorId !== existingUser.id && existingUser.role !== "ADMIN") {
             throw new Error('Você não tem permissão de acessar esta planta solar.');
         }
 
@@ -245,9 +245,9 @@ export async function generateSolarPlantReport(solarPlantId: string, userId: str
                             </div>
                             <div class='content-dados'>
                                 <div class='column'>
-                                    <div class='value-area'><label>NOME:</label><span>${existingSolarPlant.client.name}</span></div>
-                                    <div class='value-area'><label>CIDADE:</label><span>${existingSolarPlant.client.address}</span></div>
-                                    <div class='value-area'><label>TELEFONE:</label><span>${existingSolarPlant.client.phone && formatPhone(existingSolarPlant.client.phone)}</span></div>
+                                    <div class='value-area'><label>NOME:</label><span>${existingSolarPlant.client?.name}</span></div>
+                                    <div class='value-area'><label>CIDADE:</label><span>${existingSolarPlant.client?.address}</span></div>
+                                    <div class='value-area'><label>TELEFONE:</label><span>${existingSolarPlant.client?.phone && formatPhone(existingSolarPlant.client.phone)}</span></div>
                                 </div>
                                 <div class='column left'>
                                     <div class='value-area'><label>COD. USINA:</label><span>${existingSolarPlant.code}</span></div>
