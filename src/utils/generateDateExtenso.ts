@@ -1,28 +1,23 @@
-//Array com os meses do ano em protuguês
 const months: string[] = [
     'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
     'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'
 ];
 
-//Array com as unidades de 0 a 9 em português
 const units: string[] = [
     'zero', 'um', 'dois', 'três', 'quatro', 'cinco',
     'seis', 'sete', 'oito', 'nove'
 ];
 
-//Array com os números de 10 a 19 em português
 const tens: string[] = [
     'dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze',
     'dezesseis', 'dezessete', 'dezoito', 'dezenove'
 ];
 
-//Array com os múltiplos de 10 em português
 const tensMultiple: string[] = [
     'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta',
     'setenta', 'oitenta', 'noventa'
 ];
 
-//Função para converter números de 0 a 99 em palavras
 function numberToWords(number: number): string {
     if (number < 10) return units[number];
     if (number < 20) return tens[number - 10];
@@ -50,7 +45,7 @@ function numberToWords(number: number): string {
         const millionsText: string = millionsPart === 1 ? 'um milhão' : `${numberToWords(millionsPart)} milhões`;
         return remainder === 0 ? millionsText : `${millionsText} e ${numberToWords(remainder)}`;
     }
-    return ''; // Extender para números maiores se necessário
+    return '';
 }
 
 export const formatDate = (date: Date) => {

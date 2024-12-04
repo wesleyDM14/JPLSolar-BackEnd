@@ -68,11 +68,11 @@ class ContractController {
             return res.status(201).json(newContract);
         } catch (error: unknown) {
             if (error instanceof Error) {
-                console.error('Erro cadastrar o contrato: ' + error.message);
-                res.status(500).json({ message: 'Erro cadastrar o contrato: ' + error.message });
+                console.error('Erro ao cadastrar o contrato: ' + error.message);
+                res.status(500).json({ message: 'Erro ao cadastrar o contrato: ' + error.message });
             } else {
-                console.error('Erro cadastrar o contrato: Erro desconhecido.');
-                res.status(500).json({ message: 'Erro cadastrar o contrato: Erro desconhecido.' });
+                console.error('Erro ao cadastrar o contrato: Erro desconhecido.');
+                res.status(500).json({ message: 'Erro ao cadastrar o contrato: Erro desconhecido.' });
             }
         }
     }

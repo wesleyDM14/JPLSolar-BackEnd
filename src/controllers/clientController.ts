@@ -18,11 +18,11 @@ class ClientController {
             return res.status(201).json(newClient);
         } catch (error: unknown) {
             if (error instanceof Error) {
-                console.error('Erro cadastrar o cliente: ' + error.message);
-                res.status(500).json({ message: 'Erro cadastrar o cliente: ' + error.message });
+                console.error('Erro ao cadastrar o cliente: ' + error.message);
+                res.status(500).json({ message: 'Erro ao cadastrar o cliente: ' + error.message });
             } else {
-                console.error('Erro cadastrar o cliente: Erro desconhecido.');
-                res.status(500).json({ message: 'Erro cadastrar o cliente: Erro desconhecido.' });
+                console.error('Erro ao cadastrar o cliente: Erro desconhecido.');
+                res.status(500).json({ message: 'Erro ao cadastrar o cliente: Erro desconhecido.' });
             }
         }
     }
@@ -37,11 +37,11 @@ class ClientController {
             return res.status(200).json(clients);
         } catch (error: unknown) {
             if (error instanceof Error) {
-                console.error('Erro acessar os clientes: ' + error.message);
-                res.status(500).json({ message: 'Erro acessar os clientes: ' + error.message });
+                console.error('Erro ao acessar os clientes: ' + error.message);
+                res.status(500).json({ message: 'Erro ao acessar os clientes: ' + error.message });
             } else {
-                console.error('Erro acessar os clientes: Erro desconhecido.');
-                res.status(500).json({ message: 'Erro acessar os clientes: Erro desconhecido.' });
+                console.error('Erro ao acessar os clientes: Erro desconhecido.');
+                res.status(500).json({ message: 'Erro ao acessar os clientes: Erro desconhecido.' });
             }
         }
     }
@@ -52,11 +52,11 @@ class ClientController {
             return res.status(200).json(clients);
         } catch (error: unknown) {
             if (error instanceof Error) {
-                console.error('Erro acessar os clientes: ' + error.message);
-                res.status(500).json({ message: 'Erro acessar os clientes: ' + error.message });
+                console.error('Erro ao acessar os clientes: ' + error.message);
+                res.status(500).json({ message: 'Erro ao acessar os clientes: ' + error.message });
             } else {
-                console.error('Erro acessar os clientes: Erro desconhecido.');
-                res.status(500).json({ message: 'Erro acessar os clientes: Erro desconhecido.' });
+                console.error('Erro ao acessar os clientes: Erro desconhecido.');
+                res.status(500).json({ message: 'Erro ao acessar os clientes: Erro desconhecido.' });
             }
         }
     }
@@ -77,11 +77,11 @@ class ClientController {
             return res.status(200).json(clients);
         } catch (error: unknown) {
             if (error instanceof Error) {
-                console.error('Erro acessar os clientes: ' + error.message);
-                res.status(500).json({ message: 'Erro acessar os clientes: ' + error.message });
+                console.error('Erro ao acessar os clientes: ' + error.message);
+                res.status(500).json({ message: 'Erro ao acessar os clientes: ' + error.message });
             } else {
-                console.error('Erro acessar os clientes: Erro desconhecido.');
-                res.status(500).json({ message: 'Erro acessar os clientes: Erro desconhecido.' });
+                console.error('Erro ao acessar os clientes: Erro desconhecido.');
+                res.status(500).json({ message: 'Erro ao acessar os clientes: Erro desconhecido.' });
             }
         }
     }

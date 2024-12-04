@@ -8,6 +8,7 @@ import ContractController from "./controllers/contractController";
 import SolarPlantController from "./controllers/solarPlantController";
 import DashboardController from "./controllers/dashboardController";
 import WarningController from "./controllers/warningController";
+import PartnerController from "./controllers/partnerController";
 
 const router = Router();
 const userController = new UserController();
@@ -16,6 +17,7 @@ const solarPlantController = new SolarPlantController();
 const contractController = new ContractController();
 const dashboardController = new DashboardController();
 const warningController = new WarningController();
+const partnerController = new PartnerController();
 
 //CRUD para Usuário
 router.post('/login', userController.authenticateUser.bind(userController));
@@ -71,5 +73,14 @@ router.get('/myWarnings', authenticateUser, warningController.getWarningByUserLo
 router.get('/avisos/:warningId', authenticateUser, warningController.getWarningById.bind(warningController));
 router.put('/avisos/:warningId', authenticateUser, warningController.updateWarning.bind(warningController));
 router.delete('/avisos/:warningId', authenticateUser, warningController.deleteWarning.bind(warningController));
+
+//rotas para Parceiros
+router.post('/parceiros', authenticateUser, partnerController.createPartner.bind(partnerController));
+router.get('/parceiros', authenticateUser, IsAdminUser, partnerController.getPartners.bind(partnerController));
+router.get('/users/:userId/parceiros', authenticateUser, partnerController.getPartnersByUserId.bind(partnerController));
+router.get('/myPartners', authenticateUser, partnerController.getPartnersByUserLoggedIn.bind(partnerController));
+router.get('/parceiros/:partnerId', authenticateUser, partnerController.getPartnerById.bind(partnerController));
+router.put('/parceiros/:partnerId', authenticateUser, partnerController.updatePartner.bind(partnerController));
+router.delete('/parceiros/:partnerId', authenticateUser, partnerController.deletePartner.bind(partnerController));
 
 export { router };
