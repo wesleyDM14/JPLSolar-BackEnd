@@ -1,7 +1,7 @@
-import { formatDate } from './generateDateExtenso';
+import { formatDate } from '../utils/generateDateExtenso';
 import prismaClient from '../prisma';
 import { generatePdf } from 'html-pdf-node';
-import { formatCEP, formatCPF } from './formarString';
+import { formatCEP, formatCPF } from '../utils/formarString';
 import { UserRole } from '@prisma/client';
 
 const formatadorMoeda = new Intl.NumberFormat('pt-BR', {

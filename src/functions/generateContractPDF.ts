@@ -1,6 +1,6 @@
 import { addMonths } from 'date-fns';
 import prismaClient from '../prisma';
-import { formatCEP, formatCPF, formatRG } from './formarString';
+import { formatCEP, formatCPF, formatRG } from '../utils/formarString';
 import { generatePdf } from 'html-pdf-node';
 import { UserRole } from '@prisma/client';
 

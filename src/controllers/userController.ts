@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 
 import UserService from "../services/userService";
-import { validatePassword } from "../functions/validatePassword";
+import { validatePassword } from "../utils/validatePassword";
 import { UserRole } from "@prisma/client";
 
 const userService = new UserService();

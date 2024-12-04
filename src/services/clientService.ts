@@ -12,7 +12,7 @@ class ClientService {
 
         let login = name.split(" ")[0];
 
-        let password = login;
+        let password = login + '@jplsolar';
 
         const existente = await prismaClient.user.findUnique({ where: { login } });
 

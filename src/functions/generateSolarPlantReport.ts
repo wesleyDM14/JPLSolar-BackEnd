@@ -4,7 +4,7 @@ import { getChartByType } from "./getGrowattParams";
 import growatt from "growatt";
 import { Inversor } from "@prisma/client";
 import { generateChart } from "./generateChart";
-import { formatPhone } from "./formarString";
+import { formatPhone } from "../utils/formarString";
 import { fetchAbbData, getChartAbbByType } from "./getAbbParams";
 import { fetchDeyeData, getChartDeyeByType } from "./getDeyeParams";
 import { fetchCanadianData, getChartCanadianByType } from "./getCanadianParams";
