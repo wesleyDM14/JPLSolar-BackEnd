@@ -214,13 +214,13 @@ class SolarPlantController {
 
     async getSolarPlantParams(req: Request, res: Response) {
         try {
-            const { login, password, inversor, userId } = req.body;
+            const { login, password, inversor, montadorId } = req.body;
 
-            if (!login || !password || !inversor || !userId) {
+            if (!login || !password || !inversor || !montadorId) {
                 return res.status(400).json({ message: 'Parâmetros da url estão faltando.' });
             }
 
-            if (req.user.userRole !== UserRole.ADMIN && userId !== req.user.id) {
+            if (req.user.userRole !== UserRole.ADMIN && montadorId !== req.user.id) {
                 return res.status(403).json({ error: 'Acesso negado: Planta Solar não pertence ao usuário.' });
             }
 

@@ -26,6 +26,7 @@ export const generateChart = async (powerData: number[], estimatedGeneration: nu
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     position: 'bottom',
@@ -46,6 +47,10 @@ export const generateChart = async (powerData: number[], estimatedGeneration: nu
             scales: {
                 y: {
                     beginAtZero: true,
+                    min: 0,
+                    ticks: {
+                        precision: 0,
+                    },
                     title: {
                         display: true,
                         text: 'Produção (kWh)',
