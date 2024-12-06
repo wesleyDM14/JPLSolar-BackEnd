@@ -73,7 +73,17 @@ class PartnerService {
         }
 
         const existingPartner = await prismaClient.user.findUnique({
-            where: { id: partnerId }
+            where: { id: partnerId },
+            select: {
+                address: true,
+                id: true,
+                contracts: true,
+                login: true,
+                phone: true,
+                name: true,
+                role: true,
+                montadorId: true,
+            },
         });
 
         if (!existingPartner) {
