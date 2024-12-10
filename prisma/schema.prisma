@@ -33,8 +33,9 @@ model User {
     notifications Notification[]
 
     montadorId String?
-    montador   User?   @relation("MontadorClientes", fields: [montadorId], references: [id], onDelete: Cascade)
-    clientes   User[]  @relation("MontadorClientes")
+    montador   User?     @relation("MontadorClientes", fields: [montadorId], references: [id], onDelete: Cascade)
+    clientes   User[]    @relation("MontadorClientes")
+    Parcela    Parcela[] @relation("ClienteParcela")
 }
 
 model Plant {
@@ -156,7 +157,24 @@ model Notification {
     updatedAt DateTime @updatedAt
 
     userId String
-    user   User   @relation(fields: [userId], references: [id])
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Parcela {
+    id             String          @id @default(uuid())
+    valor          Float
+    num            Int
+    numTotal       Int
+    dataVencimento DateTime
+    dataPagamento  DateTime?
+    multa          Float?
+    status         StatusPagamento @default(AGUARDANDO)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    clientId String
+    client   User   @relation("ClienteParcela", fields: [clientId], references: [id], onDelete: Cascade)
 }
 
 enum EstadoCivil {
@@ -179,4 +197,10 @@ enum UserRole {
     MONTADOR
     PARCEIRO
     CLIENTE
+}
+
+enum StatusPagamento {
+    PAGO
+    ATRASADO
+    AGUARDANDO
 }

@@ -148,10 +148,6 @@ class ContractService {
     async getContractsByUser(userId: string, loggedUserId: string) {
         const userExisting = await prismaClient.user.findUnique({
             where: { id: loggedUserId },
-            select: {
-                id: true,
-                role: true,
-            }
         });
 
         if (!userExisting) {
@@ -174,22 +170,39 @@ class ContractService {
         }
 
         if (userExisting.role === 'MONTADOR') {
-            return await prismaClient.contract.findMany({
-                where: {
-                    userId: userId,
-                    User: {
-                        montadorId: userExisting.id,
+            if (userExisting.id === userId) {
+                return await prismaClient.contract.findMany({
+                    where: {
+                        userId: userId,
                     },
-                },
-                include: {
-                    endereco: true,
-                    avalista: {
-                        include: {
-                            endereco: true,
+                    include: {
+                        endereco: true,
+                        avalista: {
+                            include: {
+                                endereco: true,
+                            },
                         },
                     },
-                },
-            });
+                });
+            } else {
+                return await prismaClient.contract.findMany({
+                    where: {
+                        userId: userId,
+                        User: {
+                            montadorId: userExisting.id,
+                        },
+                    },
+                    include: {
+                        endereco: true,
+                        avalista: {
+                            include: {
+                                endereco: true,
+                            },
+                        },
+                    },
+                });
+            }
+
         }
     }
 

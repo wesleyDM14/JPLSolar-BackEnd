@@ -9,6 +9,7 @@ import SolarPlantController from "./controllers/solarPlantController";
 import DashboardController from "./controllers/dashboardController";
 import WarningController from "./controllers/warningController";
 import PartnerController from "./controllers/partnerController";
+import ParcelaController from "./controllers/parcelaController";
 
 const router = Router();
 const userController = new UserController();
@@ -18,6 +19,7 @@ const contractController = new ContractController();
 const dashboardController = new DashboardController();
 const warningController = new WarningController();
 const partnerController = new PartnerController();
+const parcelaController = new ParcelaController();
 
 //CRUD para Usuário
 router.post('/login', userController.authenticateUser.bind(userController));
@@ -82,5 +84,15 @@ router.get('/myPartners', authenticateUser, partnerController.getPartnersByUserL
 router.get('/parceiros/:partnerId', authenticateUser, partnerController.getPartnerById.bind(partnerController));
 router.put('/parceiros/:partnerId', authenticateUser, partnerController.updatePartner.bind(partnerController));
 router.delete('/parceiros/:partnerId', authenticateUser, partnerController.deletePartner.bind(partnerController));
+
+//rotas para parcela
+router.post('/parcelas', authenticateUser, parcelaController.createParcela.bind(parcelaController));
+router.get('/parcelas', authenticateUser, IsAdminUser, parcelaController.getParcelas.bind(parcelaController));
+router.get('/users/:userId/parcelas', authenticateUser, parcelaController.getParcelasByUserId.bind(parcelaController));
+router.get('/myParcels', authenticateUser, parcelaController.getParcelasByUserLoggedIn.bind(parcelaController));
+router.get('/clients/:clientId/parcelas', authenticateUser, parcelaController.getParcelasByClientId.bind(parcelaController));
+router.get('parcelas/:parcelaId', authenticateUser, parcelaController.getParcelaById.bind(parcelaController));
+router.put('/parcelas/:parcelaId', authenticateUser, parcelaController.updateParcela.bind(parcelaController));
+router.delete('/parcelas/:parcelaId', authenticateUser, parcelaController.deleteParcela.bind(parcelaController));
 
 export { router };

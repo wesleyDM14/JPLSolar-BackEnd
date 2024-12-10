@@ -1,5 +1,6 @@
 import { Inversor } from "@prisma/client";
 import prismaClient from "../prisma";
+
 import { fetchGrowattData, getChartByType, getErrorDataListForYear } from "../functions/getGrowattParams";
 import { fetchAbbData, getAbbErrorDataListForYear, getChartAbbByType } from "../functions/getAbbParams";
 import { fetchDeyeData, getChartDeyeByType, getDeyeErrorDataListForYear } from "../functions/getDeyeParams";
