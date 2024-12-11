@@ -48,7 +48,7 @@ async function updatePlantData() {
                         where: { id: plant.id },
                         data: {
                             status: plantData.status,
-                            eTotal: plantData.eTotal,
+                            eTotal: parseFloat(plantData.eTotal),
                             updatedAt: new Date()
                         }
                     });
@@ -58,6 +58,16 @@ async function updatePlantData() {
     } catch (error) {
         console.error('Erro ao atualizar dados da plantas solares:', error);
     }
+}
+
+if (require.main === module) {
+    (async () => {
+        await updatePlantData();
+        process.exit(0);
+    })().catch(err => {
+        console.error('Error ao executar o script: ', err);
+        process.exit(1);
+    });
 }
 
 export default updatePlantData;

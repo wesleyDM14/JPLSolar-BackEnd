@@ -3,6 +3,8 @@ import growatt from "growatt";
 import superagent from "superagent";
 import crypto from 'crypto';
 
+const superApi = superagent.agent();
+
 class DashboardService {
 
     private growattApi = new growatt({});
@@ -55,18 +57,18 @@ class DashboardService {
 
     async getABBData(login: string, password: string) {
         try {
-            await superagent.get('https://www.auroravision.net/ums/v1/login?setCookie=true').auth(login, password);
-            const user = await superagent.get('https://www.auroravision.net/ums/v1/users/me/info');
+            await superApi.get('https://www.auroravision.net/ums/v1/login?setCookie=true').auth(login, password);
+            const user = await superApi.get('https://www.auroravision.net/ums/v1/users/me/info');
             const plantId = user.body.plantGroupEntityId;
-            const plant = await superagent.get(`https://https://www.auroravision.net/asset/v1/portfolios/${plantId}/plants?includePerformanceProfiles=true`);
+            const plant = await superApi.get(`https://https://www.auroravision.net/asset/v1/portfolios/${plantId}/plants?includePerformanceProfiles=true`);
             const startDate = new Date(plant.body[0].configuration.installDate);
             const endDate = new Date();
-            const energyData = await superagent.get(`https://www.auroravision.net/telemetry/v1/plantGroups/${plantId}/energy/GenerationEnergy?sdt=${startDate.toISOString()}&edt=${endDate.toISOString()}`);
+            const energyData = await superApi.get(`https://www.auroravision.net/telemetry/v1/plantGroups/${plantId}/energy/GenerationEnergy?sdt=${startDate.toISOString()}&edt=${endDate.toISOString()}`);
 
-            const deviceInfo = await superagent.get(`https://www.auroravision.net/asset/v1/plants/${plant.body[0].entityID}/devices?hierarchyType=TREE`);
+            const deviceInfo = await superApi.get(`https://www.auroravision.net/asset/v1/plants/${plant.body[0].entityID}/devices?hierarchyType=TREE`);
             const device = deviceInfo.body.length > 1 ? deviceInfo.body[1] : deviceInfo.body[0];
 
-            await superagent.get('https://www.auroravision.net/ums/v1/logout');
+            await superApi.get('https://www.auroravision.net/ums/v1/logout');
 
             return {
                 status: device.state === 'ACTIVE' ? '1' : device.state === 'DELINQUENT' ? '-1' : '0',
@@ -80,7 +82,7 @@ class DashboardService {
     async getDeyeData(login: string, password: string) {
         try {
             const hash = crypto.createHash('sha256').update(password).digest('hex');
-            const dashboard = await superagent.post('https://globalhome.solarmanpv.com/mdc-eu/oauth-s/oauth/token').send({
+            const dashboard = await superApi.post('https://globalhome.solarmanpv.com/mdc-eu/oauth-s/oauth/token').send({
                 grant_type: 'mdc_password',
                 username: login,
                 clear_text_pwd: password,
@@ -92,17 +94,17 @@ class DashboardService {
             }).set('Content-Type', 'application/x-www-form-urlencoded');
 
             const acessToken = dashboard.body.access_token;
-            const plantList = await superagent.post('https://globalhome.solarmanpv.com/maintain-s/operating/station/search?order.direction=DESC&order.property=id&page=1&size=20')
+            const plantList = await superApi.post('https://globalhome.solarmanpv.com/maintain-s/operating/station/search?order.direction=DESC&order.property=id&page=1&size=20')
                 .set('Authorization', `Bearer ${acessToken}`);
 
             const plantSolar = plantList.body.data[0];
-            const plantDetail = await superagent.get(`https://globalhome.solarmanpv.com/maintain-s/operating/station/information/${plantSolar.id}?language=pt`)
+            const plantDetail = await superApi.get(`https://globalhome.solarmanpv.com/maintain-s/operating/station/information/${plantSolar.id}?language=pt`)
                 .set('Authorization', `Bearer ${acessToken}`);
 
-            const deviceInfo = await superagent.get(`https://home.solarmanpv.com/maintain-s/fast/device/${plantSolar.id}/device-list?deviceType=INVERTER`)
+            const deviceInfo = await superApi.get(`https://home.solarmanpv.com/maintain-s/fast/device/${plantSolar.id}/device-list?deviceType=INVERTER`)
                 .set('Authorization', `Bearer ${acessToken}`);
 
-            await superagent.post('https://home.solarmanpv.com/backyard-api-s/announcement/content').set('Content-Type', 'application/json');
+            await superApi.post('https://home.solarmanpv.com/backyard-api-s/announcement/content').set('Content-Type', 'application/json');
 
             return {
                 status: deviceInfo.body[0].deviceStatus.toString(),
@@ -116,7 +118,19 @@ class DashboardService {
     async getCanadianData(login: string, password: string) {
         try {
             const hash = crypto.createHash('sha256').update(password).digest('hex');
-            const dashboard = await superagent.post('https://monitoring.csisolar.com/home/oauth-s/oauth/token').send({
+
+            const platform = await superApi.post('https://webmonitoring-gl.csisolar.com/home/backyard-api-s/app/upgrade/add-version')
+                .send({
+                    channel: "Web",
+                    innerVersion: "122",
+                    platform: "CSI Cloud",
+                    platformCode: "CSI_CLOUD",
+                    type: 1,
+                    version: "2.3.1"
+                })
+                .set('Content-Type', 'application/json');
+
+            const dashboard = await superApi.post('https://webmonitoring-gl.csisolar.com/home/oauth-s/oauth/token').send({
                 grant_type: 'password',
                 username: login,
                 clear_text_pwd: password,
@@ -126,15 +140,16 @@ class DashboardService {
             }).set('Content-Type', 'application/x-www-form-urlencoded');
 
             const acessToken = dashboard.body.access_token;
-            const plantData = await superagent.post('https://monitoring.csisolar.com/home/maintain-s/operating/station/search?order.direction=DESC&order.property=id&page=1&size=20')
+
+            const plantData = await superApi.post('https://webmonitoring-gl.csisolar.com/home/maintain-s/operating/station/search?order.direction=DESC&order.property=id&page=1&size=20')
                 .set('Authorization', `Bearer ${acessToken}`)
                 .set('Content-Type', 'application/json');
 
             const plantId = plantData.body.data[0].id;
-            const totalData = await superagent.get(`https://monitoring.csisolar.com/home/maintain-s/operating/system/${plantId}`)
+            const totalData = await superApi.get(`https://webmonitoring-gl.csisolar.com/home/maintain-s/operating/system/${plantId}`)
                 .set('Authorization', `Bearer ${acessToken}`);
 
-            const deviceInfo = await superagent.get(`https://monitoring.csisolar.com/home/maintain-s/operating/station/${plantId}/inverter?order.direction=DESC&order.property=name&page=1&size=20&total=0`)
+            const deviceInfo = await superApi.get(`https://webmonitoring-gl.csisolar.com/home/maintain-s/operating/station/${plantId}/inverter?order.direction=DESC&order.property=name&page=1&size=20&total=0`)
                 .set('Authorization', `Bearer ${acessToken}`);
 
             return {

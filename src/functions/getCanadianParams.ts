@@ -139,7 +139,7 @@ export const fetchCanadianData = async (login: string, password: string) => {
         result.deviceSNInfo.modelText = getInverterDeviceInfo.body.data[0].serialNumber;
 
         result.datalogSNInfo = {};
-        const dataloggInfo = await superagent.get(`https://webmonitoring-gl.csisolar.com/home/maintain-s/operating/station/${plantId}/collector?order.direction=DESC&order.property=name&page=1&size=20&total=1`)
+        const dataloggInfo = await superApi.get(`https://webmonitoring-gl.csisolar.com/home/maintain-s/operating/station/${plantId}/collector?order.direction=DESC&order.property=name&page=1&size=20&total=1`)
             .set('Authorization', `Bearer ${accessToken}`);
 
         result.datalogSNInfo.simSignal = dataloggInfo.body.data[0].netState;
