@@ -146,17 +146,26 @@ class ContractService {
 
     //Read All for user
     async getContractsByUser(userId: string, loggedUserId: string) {
-        const userExisting = await prismaClient.user.findUnique({
+        const loggedUser = await prismaClient.user.findUnique({
             where: { id: loggedUserId },
         });
 
-        if (!userExisting) {
-            throw new Error('Usuário não encontrado no Banco de Dados.');
+        if (!loggedUser) {
+            throw new Error('Usuário logado não encontrado no Banco de Dados.');
         }
 
-        if (userExisting.role === "ADMIN") {
+        const targetUser = await prismaClient.user.findUnique({
+            where: { id: userId },
+        });
+
+        if (!targetUser) {
+            throw new Error('Usuário alvo não encontrado no Banco de Dados.');
+        }
+
+        if (loggedUser.role === 'ADMIN') {
+
             return await prismaClient.contract.findMany({
-                where: { userId: userId },
+                where: { userId },
                 include: {
                     endereco: true,
                     avalista: {
@@ -164,16 +173,28 @@ class ContractService {
                             endereco: true,
                         },
                     },
+                    User: {
+                        select: {
+                            name: true,
+                        },
+                    },
                 },
-
             });
         }
 
-        if (userExisting.role === 'MONTADOR') {
-            if (userExisting.id === userId) {
+        if (loggedUser.role === 'MONTADOR') {
+            if (targetUser.role === 'MONTADOR') {
+
+                if (loggedUser.id !== targetUser.id) {
+                    throw new Error('Montadores só podem acessar seus próprios dados.');
+                }
+
                 return await prismaClient.contract.findMany({
                     where: {
-                        userId: userId,
+                        OR: [
+                            { userId: loggedUser.id },
+                            { User: { montadorId: loggedUser.id } },
+                        ],
                     },
                     include: {
                         endereco: true,
@@ -182,28 +203,63 @@ class ContractService {
                                 endereco: true,
                             },
                         },
-                    },
-                });
-            } else {
-                return await prismaClient.contract.findMany({
-                    where: {
-                        userId: userId,
                         User: {
-                            montadorId: userExisting.id,
+                            select: {
+                                name: true,
+                            },
                         },
                     },
+                });
+            } else if (targetUser.role === 'PARCEIRO') {
+
+                if (targetUser.montadorId !== loggedUser.id) {
+                    throw new Error('Você não tem permissão para acessar os contratos desse Parceiro.');
+                }
+
+                return await prismaClient.contract.findMany({
+                    where: { userId },
                     include: {
                         endereco: true,
                         avalista: {
                             include: {
                                 endereco: true,
+                            },
+                        },
+                        User: {
+                            select: {
+                                name: true,
                             },
                         },
                     },
                 });
             }
-
         }
+
+        if (loggedUser.role === 'PARCEIRO') {
+
+            if (loggedUser.id !== userId) {
+                throw new Error('Você só pode acessar seus próprios contratos.');
+            }
+
+            return await prismaClient.contract.findMany({
+                where: { userId: loggedUser.id },
+                include: {
+                    endereco: true,
+                    avalista: {
+                        include: {
+                            endereco: true,
+                        },
+                    },
+                    User: {
+                        select: {
+                            name: true,
+                        },
+                    },
+                },
+            });
+        }
+
+        throw new Error('Permissão negada.');
     }
 
     //Read unique

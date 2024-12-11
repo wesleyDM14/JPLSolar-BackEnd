@@ -77,7 +77,21 @@ class PartnerService {
             select: {
                 address: true,
                 id: true,
-                contracts: true,
+                contracts: {
+                    include: {
+                        User: {
+                            select: {
+                                name: true,
+                            },
+                        },
+                        endereco: true,
+                        avalista: {
+                            include: {
+                                endereco: true,
+                            },
+                        },
+                    },
+                },
                 login: true,
                 phone: true,
                 name: true,
