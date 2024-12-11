@@ -121,7 +121,7 @@ class UserController {
         try {
 
             const userId = req.params.userId;
-            const { newPassword, confirmPassword, nome } = req.body;
+            const { newPassword, confirmPassword, nome, login } = req.body;
 
             if (req.user.id !== userId && req.user.userRole !== UserRole.ADMIN) {
                 return res.status(403).json({ message: 'Você não possui autorização para alterar o usuário.' });
@@ -133,7 +133,7 @@ class UserController {
 
             validatePassword(newPassword, confirmPassword);
 
-            await userService.updateUser(userId, nome, newPassword);
+            await userService.updateUser(userId, nome, login, newPassword);
 
             return res.status(200).json({ message: 'Usuário Atualizado com sucesso.' });
         } catch (error: unknown) {

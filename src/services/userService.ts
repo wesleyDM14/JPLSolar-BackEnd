@@ -1,4 +1,4 @@
-import { hash, compare,  } from 'bcryptjs';
+import { hash, compare, } from 'bcryptjs';
 import prismaClient from "../prisma";
 import { generateAccessToken } from '../functions/generateAccessToken';
 
@@ -86,14 +86,14 @@ class UserService {
     }
 
     async getUserById(userId: string) {
-        const existingUser = await prismaClient.user.findUnique({ 
+        const existingUser = await prismaClient.user.findUnique({
             where: { id: userId },
             select: {
                 id: true,
                 role: true,
                 name: true,
                 login: true,
-            } 
+            }
         });
 
         if (!existingUser) {
@@ -103,7 +103,7 @@ class UserService {
         return existingUser;
     }
 
-    async updateUser(userId: string, name: string, newPassword: string) {
+    async updateUser(userId: string, name: string, login: string, newPassword: string) {
         const existingUser = await prismaClient.user.findUnique({ where: { id: userId } });
 
         if (!existingUser) {
@@ -115,6 +115,7 @@ class UserService {
         await prismaClient.user.update({
             where: { id: userId },
             data: {
+                login: login ? login : existingUser.login,
                 name: name ? name : existingUser.name,
                 password: passwordHash
             }
