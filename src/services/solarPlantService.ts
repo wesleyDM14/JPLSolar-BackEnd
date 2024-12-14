@@ -82,14 +82,27 @@ class SolarPlantService {
             throw new Error('Usuário não encontrado no banco de dados.');
         }
 
-        const solarPlants = await prismaClient.plant.findMany({
-            where: { montadorId: existingUser.id },
-            orderBy: { installationDate: "desc" },
-        });
+        if (existingUser.role === 'MONTADOR') {
+            const solarPlants = await prismaClient.plant.findMany({
+                where: { montadorId: existingUser.id },
+                orderBy: { installationDate: "desc" },
+            });
 
-        const result = { userInfo: existingUser, solarPlants: solarPlants };
+            const result = { userInfo: existingUser, solarPlants: solarPlants };
 
-        return result;
+            return result;
+
+        } else if (existingUser.role === 'CLIENTE') {
+            const solarPlants = await prismaClient.plant.findMany({
+                where: { clientId: existingUser.id },
+                orderBy: { installationDate: "desc" },
+            });
+
+            const result = { userInfo: existingUser, solarPlants: solarPlants };
+
+            return result;
+        }
+
     }
 
     async getSolarPlantsByClientId(clientId: string, userId: string) {
@@ -134,11 +147,22 @@ class SolarPlantService {
             throw new Error('Planta Solar não encontrada no banco de dados.');
         }
 
-        if (existingSolarPlant.montadorId !== existingUser.id && existingUser.role !== "ADMIN") {
+        if (existingUser.role === 'MONTADOR') {
+            if (existingSolarPlant.montadorId !== existingUser.id) {
+                throw new Error('Você não tem permissão para acessar a planta solar.');
+            }
+            return existingSolarPlant;
+        } else if (existingUser.role === 'CLIENTE') {
+            if (existingSolarPlant.clientId !== existingUser.id) {
+                throw new Error('Você não tem permissão para acessar a planta solar.');
+            }
+            return existingSolarPlant;
+        } else if (existingUser.role === 'ADMIN') {
+            return existingSolarPlant;
+        } else {
             throw new Error('Você não tem permissão para acessar a planta solar.');
         }
 
-        return existingSolarPlant;
     }
 
     async updateSolarPlant(code: string, installedPower: number, local: string, installationDate: Date, inverter: Inversor, inverterPot: number, panel: string, panelPower: number, numberPanel: number, estimatedGeneration: number, login: string, password: string, solarPlantId: string, userId: string) {
@@ -219,7 +243,11 @@ class SolarPlantService {
             throw new Error('Planta Solar não encontrada no banco de dados.');
         }
 
-        if (existingSolarPlant.montadorId !== existingUser.id && existingUser.role !== "ADMIN") {
+        if (existingUser.role === 'MONTADOR' && existingSolarPlant.montadorId !== existingUser.id) {
+            throw new Error('Você não tem permissão para acessar a planta solar.');
+        }
+
+        if (existingUser.role === 'CLIENTE' && existingSolarPlant.clientId !== existingUser.id) {
             throw new Error('Você não tem permissão para acessar a planta solar.');
         }
 
@@ -246,7 +274,11 @@ class SolarPlantService {
             throw new Error('Planta Solar não encontrada no banco de dados.');
         }
 
-        if (existingSolarPlant.montadorId !== existingUser.id && existingUser.role !== "ADMIN") {
+        if (existingUser.role === 'MONTADOR' && existingSolarPlant.montadorId !== existingUser.id) {
+            throw new Error('Você não tem permissão para acessar a planta solar.');
+        }
+
+        if (existingUser.role === 'CLIENTE' && existingSolarPlant.clientId !== existingUser.id) {
             throw new Error('Você não tem permissão para acessar a planta solar.');
         }
 
@@ -273,7 +305,11 @@ class SolarPlantService {
             throw new Error('Planta Solar não encontrada no banco de dados.');
         }
 
-        if (existingSolarPlant.montadorId !== existingUser.id && existingUser.role !== "ADMIN") {
+        if (existingUser.role === 'MONTADOR' && existingSolarPlant.montadorId !== existingUser.id) {
+            throw new Error('Você não tem permissão para acessar a planta solar.');
+        }
+
+        if (existingUser.role === 'CLIENTE' && existingSolarPlant.clientId !== existingUser.id) {
             throw new Error('Você não tem permissão para acessar a planta solar.');
         }
 
@@ -301,7 +337,11 @@ class SolarPlantService {
             throw new Error('Planta Solar não encontrada no banco de dados.');
         }
 
-        if (existingSolarPlant.montadorId !== existingUser.id && existingUser.role !== "ADMIN") {
+        if (existingUser.role === 'MONTADOR' && existingSolarPlant.montadorId !== existingUser.id) {
+            throw new Error('Você não tem permissão para acessar a planta solar.');
+        }
+
+        if (existingUser.role === 'CLIENTE' && existingSolarPlant.clientId !== existingUser.id) {
             throw new Error('Você não tem permissão para acessar a planta solar.');
         }
 

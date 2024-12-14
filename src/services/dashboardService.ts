@@ -7,15 +7,15 @@ const superApi = superagent.agent();
 
 class DashboardService {
 
-    private growattApi = new growatt({});
-    private growattApiC = new growatt({ indexCandI: true });
-
     private async fetchPlantData(login: string, password: string): Promise<any> {
         try {
-            let plantData = await this.tryLoginAndFetchData(this.growattApi, login, password);
+            let growattApi = new growatt({});
+            let plantData = await this.tryLoginAndFetchData(growattApi, login, password);
 
             if (Object.keys(plantData).length === 0) {
-                plantData = await this.tryLoginAndFetchData(this.growattApiC, login, password);
+                let growattApiC = new growatt({ indexCandI: true });
+
+                plantData = await this.tryLoginAndFetchData(growattApiC, login, password);
             }
 
             return plantData;
@@ -42,14 +42,20 @@ class DashboardService {
 
             const plantServer = plantData[plantServerID];
             const inverterServerID = Object.keys(plantServer.devices);
-            if (inverterServerID.length === 0) throw new Error('No devices found');
 
-            const inverterServer = plantServer.devices[inverterServerID[0]];
+            if (inverterServerID.length > 0) {
+                const inverterServer = plantServer.devices[inverterServerID[0]];
+                return {
+                    status: inverterServer.deviceData.status,
+                    eTotal: inverterServer.deviceData.eTotal,
+                };
+            } else {
+                return {
+                    status: '-1',
+                    eTotal: plantServer.plantData.eTotal,
+                };
+            }
 
-            return {
-                status: inverterServer.deviceData.status,
-                eTotal: inverterServer.deviceData.eTotal,
-            };
         } catch (error) {
             throw new Error(`Erro to get Growatt Data: ${login} - ${error}`);
         }
@@ -60,7 +66,7 @@ class DashboardService {
             await superApi.get('https://www.auroravision.net/ums/v1/login?setCookie=true').auth(login, password);
             const user = await superApi.get('https://www.auroravision.net/ums/v1/users/me/info');
             const plantId = user.body.plantGroupEntityId;
-            const plant = await superApi.get(`https://https://www.auroravision.net/asset/v1/portfolios/${plantId}/plants?includePerformanceProfiles=true`);
+            const plant = await superApi.get(`https://www.auroravision.net/asset/v1/portfolios/${plantId}/plants?includePerformanceProfiles=true`);
             const startDate = new Date(plant.body[0].configuration.installDate);
             const endDate = new Date();
             const energyData = await superApi.get(`https://www.auroravision.net/telemetry/v1/plantGroups/${plantId}/energy/GenerationEnergy?sdt=${startDate.toISOString()}&edt=${endDate.toISOString()}`);
@@ -82,6 +88,7 @@ class DashboardService {
     async getDeyeData(login: string, password: string) {
         try {
             const hash = crypto.createHash('sha256').update(password).digest('hex');
+
             const dashboard = await superApi.post('https://globalhome.solarmanpv.com/mdc-eu/oauth-s/oauth/token').send({
                 grant_type: 'mdc_password',
                 username: login,
@@ -94,20 +101,27 @@ class DashboardService {
             }).set('Content-Type', 'application/x-www-form-urlencoded');
 
             const acessToken = dashboard.body.access_token;
-            const plantList = await superApi.post('https://globalhome.solarmanpv.com/maintain-s/operating/station/search?order.direction=DESC&order.property=id&page=1&size=20')
+
+            let plantList = await superApi.post('https://globalhome.solarmanpv.com/maintain-s/operating/station/search?order.direction=DESC&order.property=id&page=1&size=20').send({})
                 .set('Authorization', `Bearer ${acessToken}`);
 
-            const plantSolar = plantList.body.data[0];
-            const plantDetail = await superApi.get(`https://globalhome.solarmanpv.com/maintain-s/operating/station/information/${plantSolar.id}?language=pt`)
+            let plantSolar = plantList.body.data[0];
+
+            let temp = plantSolar.id;
+
+            const plantDetail = await superApi.get(`https://globalhome.solarmanpv.com/maintain-s/operating/station/information/${temp}?language=pt`)
                 .set('Authorization', `Bearer ${acessToken}`);
 
-            const deviceInfo = await superApi.get(`https://home.solarmanpv.com/maintain-s/fast/device/${plantSolar.id}/device-list?deviceType=INVERTER`)
+            const deviceInfo = await superApi.get(`https://home.solarmanpv.com/maintain-s/fast/device/${temp}/device-list?deviceType=INVERTER`)
                 .set('Authorization', `Bearer ${acessToken}`);
 
-            await superApi.post('https://home.solarmanpv.com/backyard-api-s/announcement/content').set('Content-Type', 'application/json');
+            let inverterStatus = deviceInfo.body.length > 0 ? deviceInfo.body[0].deviceStatus.toString() : '-1';
+
+            let logout = await superApi.post('https://globalhome.solarmanpv.com/oauth2-s/oauth/logout').send({
+            }).set('Content-Type', 'application/json').set('Authorization', `Bearer ${acessToken}`);
 
             return {
-                status: deviceInfo.body[0].deviceStatus.toString(),
+                status: inverterStatus,
                 eTotal: plantDetail.body.generationTotal
             };
         } catch (error) {
@@ -131,26 +145,28 @@ class DashboardService {
                 .set('Content-Type', 'application/json');
 
             const dashboard = await superApi.post('https://webmonitoring-gl.csisolar.com/home/oauth-s/oauth/token').send({
-                grant_type: 'password',
+                grant_type: 'mdc_password',
                 username: login,
                 clear_text_pwd: password,
                 password: hash,
+                identity_type: 2,
                 client_id: 'test',
-                identity_type: 2
+                system: 'CSICloud',
             }).set('Content-Type', 'application/x-www-form-urlencoded');
 
-            const acessToken = dashboard.body.access_token;
+            const accessToken = dashboard.body.access_token;
 
-            const plantData = await superApi.post('https://webmonitoring-gl.csisolar.com/home/maintain-s/operating/station/search?order.direction=DESC&order.property=id&page=1&size=20')
-                .set('Authorization', `Bearer ${acessToken}`)
+            const plantData = await superApi.post('https://webmonitoring-gl.csisolar.com/home/maintain-s/operating/station/search?order.direction=DESC&order.property=id&page=1&size=20').send({})
+                .set('Authorization', `Bearer ${accessToken}`)
                 .set('Content-Type', 'application/json');
 
             const plantId = plantData.body.data[0].id;
+
             const totalData = await superApi.get(`https://webmonitoring-gl.csisolar.com/home/maintain-s/operating/system/${plantId}`)
-                .set('Authorization', `Bearer ${acessToken}`);
+                .set('Authorization', `Bearer ${accessToken}`);
 
             const deviceInfo = await superApi.get(`https://webmonitoring-gl.csisolar.com/home/maintain-s/operating/station/${plantId}/inverter?order.direction=DESC&order.property=name&page=1&size=20&total=0`)
-                .set('Authorization', `Bearer ${acessToken}`);
+                .set('Authorization', `Bearer ${accessToken}`);
 
             return {
                 status: deviceInfo.body.data[0].deviceState.toString(),
@@ -175,7 +191,7 @@ class DashboardService {
             eTotal: plant.eTotal,
             clientName: plant.client?.name,
             solarPlantCode: plant.code,
-        }))
+        }));
 
         const plantsCount = plants.length;
 
@@ -183,11 +199,11 @@ class DashboardService {
 
         const formatPower = (power: number) => {
             if (power >= 1e6) {
-                return (power / 1e6).toFixed(2) + ' MWp';
+                return (power / 1e6).toFixed(2) + ' GWp';
             } else if (power >= 1e3) {
-                return (power / 1e3).toFixed(2) + ' KWp';
+                return (power / 1e3).toFixed(2) + ' MWp';
             } else {
-                return power.toFixed(2) + ' Wp';
+                return power.toFixed(2) + ' kWp';
             }
         };
 
