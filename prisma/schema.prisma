@@ -36,6 +36,7 @@ model User {
     montador   User?     @relation("MontadorClientes", fields: [montadorId], references: [id], onDelete: Cascade)
     clientes   User[]    @relation("MontadorClientes")
     Parcela    Parcela[] @relation("ClienteParcela")
+    Column     Column[]  @relation("MontadorColuna")
 }
 
 model Plant {
@@ -77,6 +78,7 @@ model Contract {
     dataNascimento DateTime
     cpf            String
     rg             String
+    genero         Genero
 
     dataContrato        DateTime
     carencia            Int? //carencia em dias
@@ -177,6 +179,25 @@ model Parcela {
     client   User   @relation("ClienteParcela", fields: [clientId], references: [id], onDelete: Cascade)
 }
 
+model Column {
+    id    String @id @default(uuid())
+    title String
+
+    montadorId String
+    montador   User   @relation("MontadorColuna", fields: [montadorId], references: [id], onDelete: Cascade)
+    Task       Task[]
+}
+
+model Task {
+    id          String    @id @default(uuid())
+    name        String
+    description String
+    dataFinal   DateTime?
+
+    columnId String
+    columm   Column @relation(fields: [columnId], references: [id])
+}
+
 enum EstadoCivil {
     SOLTEIRO
     CASADO
@@ -203,4 +224,9 @@ enum StatusPagamento {
     PAGO
     ATRASADO
     AGUARDANDO
+}
+
+enum Genero {
+    MASCULINO
+    FEMININO
 }

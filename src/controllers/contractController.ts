@@ -45,9 +45,10 @@ class ContractController {
                 cidadeAvalista,
                 ufAvalista,
                 cepAvalista,
+                genero
             } = req.body;
 
-            if (!nome || !email || !profissao || !estadoCivil || !dataNascimento || !cpf || !rg || !logradouro || (numero === null || numero === undefined) || !bairro || !cidade || !uf || !cep) {
+            if (!nome || !email || !profissao || !estadoCivil || !dataNascimento || !cpf || !rg || !logradouro || (numero === null || numero === undefined) || !bairro || !cidade || !uf || !cep || !genero) {
                 return res.status(400).json({ message: 'Por favor, informe os dados pessoais do cliente corretamente.' });
             }
 
@@ -63,7 +64,7 @@ class ContractController {
                 return res.status(400).json({ message: 'Por favor, informe os dados do avalista corretamente.' });
             }
 
-            const newContract = await contractService.createContract(nome, email, profissao, estadoCivil, dataNascimento, cpf, rg, dataContrato, carencia, dataPrimeiraParcela, quantParcelas, priceTotal, priceParcela, modeloModulos, potModulos, modeloInversor, potInversor, avalista, logradouro, numero, bairro, cidade, uf, cep, nomeAvalista, profissaoAvalista, cpfAvalista, logradouroAvalista, numeroAvalista, bairroAvalista, cidadeAvalista, ufAvalista, cepAvalista, req.user.id);
+            const newContract = await contractService.createContract(nome, email, profissao, estadoCivil, dataNascimento, cpf, rg, dataContrato, carencia, dataPrimeiraParcela, quantParcelas, priceTotal, priceParcela, modeloModulos, potModulos, modeloInversor, potInversor, avalista, logradouro, numero, bairro, cidade, uf, cep, nomeAvalista, profissaoAvalista, cpfAvalista, logradouroAvalista, numeroAvalista, bairroAvalista, cidadeAvalista, ufAvalista, cepAvalista, genero, req.user.id);
 
             return res.status(201).json(newContract);
         } catch (error: unknown) {
@@ -198,9 +199,10 @@ class ContractController {
                 cidadeAvalista,
                 ufAvalista,
                 cepAvalista,
+                genero
             } = req.body;
 
-            if (!nome || !email || !profissao || !estadoCivil || !dataNascimento || !cpf || !rg || !logradouro || (numero === null || numero === undefined) || !bairro || !cidade || !uf || !cep) {
+            if (!nome || !email || !profissao || !estadoCivil || !dataNascimento || !cpf || !rg || !logradouro || (numero === null || numero === undefined) || !bairro || !cidade || !uf || !cep || !genero) {
                 return res.status(400).json({ message: 'Por favor, informe os dados pessoais do cliente corretamente.' });
             }
 
@@ -216,7 +218,7 @@ class ContractController {
                 return res.status(400).json({ message: 'Por favor, informe os dados do avalista corretamente.' });
             }
 
-            const updatedContract = await contractService.updateContract(req.user.id, contratoId, nome, email, profissao, estadoCivil, dataNascimento, cpf, rg, dataContrato, carencia, dataPrimeiraParcela, quantParcelas, priceTotal, priceParcela, modeloModulos, potModulos, modeloInversor, potInversor, avalista, logradouro, numero, bairro, cidade, uf, cep, nomeAvalista, profissaoAvalista, cpfAvalista, logradouroAvalista, numeroAvalista, bairroAvalista, cidadeAvalista, ufAvalista, cepAvalista);
+            const updatedContract = await contractService.updateContract(req.user.id, contratoId, nome, email, profissao, estadoCivil, dataNascimento, cpf, rg, dataContrato, carencia, dataPrimeiraParcela, quantParcelas, priceTotal, priceParcela, modeloModulos, potModulos, modeloInversor, potInversor, avalista, logradouro, numero, bairro, cidade, uf, cep, nomeAvalista, profissaoAvalista, cpfAvalista, logradouroAvalista, numeroAvalista, bairroAvalista, cidadeAvalista, ufAvalista, cepAvalista, genero);
 
             return res.status(200).json(updatedContract);
         } catch (error: unknown) {

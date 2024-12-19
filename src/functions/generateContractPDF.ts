@@ -3,6 +3,7 @@ import prismaClient from '../prisma';
 import { formatCEP, formatCPF, formatRG } from '../utils/formarString';
 import { generatePdf } from 'html-pdf-node';
 import { UserRole } from '@prisma/client';
+import { formatGenderStringEstadoCivil } from './formatGenderProfission';
 
 const extenso = require('numero-por-extenso');
 
@@ -229,18 +230,18 @@ export async function generateContractPDF(contractId: string, userId: string, ca
                             <h1>INSTRUMENTO DE COMPRA E VENDA COM ALIENAÇÃO FIDUCIÁRIA</h1>
                         </div>
                         <div class="contract-container">
-                            <p>Pelo presente instrumento particular de compra e venda com reserva de domínio, a saber de um lado a empresa GURGEL AZEVEDO E TEOFILO SERVIÇOS DE ENGENHARIA LTDA, com sede na cidade de São Miguel - RN, Rua Nikola Tesla, 189, Bairro Maria Manoela, inscrita no CNPJ sob o nº 33.651.184/0001-09, denominada de <strong>VENDEDORA</strong> e de outro lado ${contractExisting.nome}, ${contractExisting.profissao.toLocaleLowerCase()}, ${(contractExisting.estadoCivil).toLowerCase()}, ${enderecoCliente.logradouro + ', Nº ' + enderecoCliente.numero + ', ' + enderecoCliente.bairro + ', ' + enderecoCliente.cidade + ' - ' + enderecoCliente.uf + ', CEP nº ' + formatCEP(enderecoCliente.cep)}, portador (a) do CPF nº ${formatCPF(contractExisting.cpf)}, denominado de <strong>COMPRADOR</strong>, tem entre si, justo e acordado o seguinte:</p>
-                            <p><strong>CLÁUSULA 1º -</strong> Que o <strong>COMPRADOR</strong> adquire nesta Data de ${dataContrato}, um sistema fotovoltaico de ${contractExisting.potModulos}kWp de potência com módulos fotovoltaicos ${contractExisting.modeloModulos}, ${contractExisting.potInversor}kW de inversor ${contractExisting.modeloInversor} e estrutura de fixação pela quantia de <strong>${valorTotal} (${extenso.porExtenso(contractExisting.priceTotal, extenso.estilo.monetario).toUpperCase()})</strong>.</p>
-                            <p><strong>CLÁUSULA 2º -</strong> Que para pagamento da quantia mencionada, correspondente ao valor do bem adquirido pelo comprador, esse assume o compromisso de efetuar o pagamento de ${contractExisting.quantParcelas} parcelas mensais e consecutivas de <strong>${valorParcela} (${extenso.porExtenso(contractExisting.priceParcela, extenso.estilo.monetario).toUpperCase()})</strong> a vencer a primeira em ${dataPrimeiraParcela} e a última em ${dataUltimaParcela}, representado por boletos bancários que serão enviados pela <strong>VENDEDORA</strong> ao <strong>COMPRADOR</strong>, sendo vedado o depósito na conta bancária da <strong>VENDEDORA</strong> para quitação de parcelas do presente instrumento particular.</p>
-                            <p><strong>CLÁUSULA 3º -</strong> Que para garantia do adimplemento da obrigação ora assumida, o <strong>COMPRADOR</strong> na condição de devedor, transfere à <strong>VENDEDORA</strong> em alienação fiduciária, o bem objeto da presente transação e descrito na cláusula 1ª, cuja alienação perdurará até a efetiva quitação da última parcela avençada.</p>
-                            <p><strong>CLÁUSULA 4º -</strong> Que no caso de inadimplemento o <strong>COMPRADOR</strong> ficará sujeito ao pagamento de multa de 2% (dois por cento) ao mês sobre a parcela vencida, além de juros à MORA de 0,33% (zero vírgula trinta e três por cento) sobre o saldo devedor atualizado.</p>
-                            <p><strong>CLÁUSULA 5º -</strong> Que nesta DATA ${dataContrato} o <strong>COMPRADOR</strong> emite em favor da credora uma nota promissória no valor total da dívida, podendo ocorrer o protesto em caso de inadimplemento de três prestações, que serão objeto de protesto ou notificação para constituição em mora do devedor.</p>
+                            <p>Pelo presente instrumento particular de compra e venda com reserva de domínio, a saber de um lado a empresa GURGEL AZEVEDO E TEOFILO SERVIÇOS DE ENGENHARIA LTDA, com sede na cidade de São Miguel - RN, Rua Nikola Tesla, 189, Bairro Maria Manoela, inscrita no CNPJ sob o nº 33.651.184/0001-09, denominada de <strong>VENDEDORA</strong> e de outro lado ${contractExisting.nome.toUpperCase()}, ${contractExisting.profissao.toUpperCase()}, ${formatGenderStringEstadoCivil(contractExisting.genero, contractExisting.estadoCivil)}, residente no endereço ${enderecoCliente.logradouro.toUpperCase() + ', Nº ' + enderecoCliente.numero + ', ' + enderecoCliente.bairro.toUpperCase() + ', ' + enderecoCliente.cidade.toUpperCase() + ' - ' + enderecoCliente.uf.toUpperCase() + ', CEP nº ' + formatCEP(enderecoCliente.cep)}, portador (a) do CPF nº ${formatCPF(contractExisting.cpf)}, denominado de <strong>${contractExisting.genero === 'MASCULINO' ? 'COMPRADOR' : 'COMPRADORA'}</strong>, tem entre si, justo e acordado o seguinte:</p>
+                            <p><strong>CLÁUSULA 1º -</strong> Que ${contractExisting.genero === 'MASCULINO' ? 'o' : 'a'} <strong>${contractExisting.genero === 'MASCULINO' ? 'COMPRADOR' : 'COMPRADORA'}</strong> adquire nesta Data de ${dataContrato}, um sistema fotovoltaico de ${contractExisting.potModulos}kWp de potência com módulos fotovoltaicos ${contractExisting.modeloModulos}, ${contractExisting.potInversor}kW de inversor ${contractExisting.modeloInversor} e estrutura de fixação pela quantia de <strong>${valorTotal} (${extenso.porExtenso(contractExisting.priceTotal, extenso.estilo.monetario).toUpperCase()})</strong>.</p>
+                            <p><strong>CLÁUSULA 2º -</strong> Que para pagamento da quantia mencionada, correspondente ao valor do bem adquirido pelo comprador, esse assume o compromisso de efetuar o pagamento de ${contractExisting.quantParcelas} parcelas mensais e consecutivas de <strong>${valorParcela} (${extenso.porExtenso(contractExisting.priceParcela, extenso.estilo.monetario).toUpperCase()})</strong> a vencer a primeira em ${dataPrimeiraParcela} e a última em ${dataUltimaParcela}, representado por boletos bancários que serão enviados pela <strong>VENDEDORA</strong> ${contractExisting.genero === 'MASCULINO' ? 'ao' : 'à'} <strong>${contractExisting.genero === 'MASCULINO' ? 'COMPRADOR' : 'COMPRADORA'}</strong>, sendo vedado o depósito na conta bancária da <strong>VENDEDORA</strong> para quitação de parcelas do presente instrumento particular.</p>
+                            <p><strong>CLÁUSULA 3º -</strong> Que para garantia do adimplemento da obrigação ora assumida, ${contractExisting.genero === 'MASCULINO' ? 'o' : 'a'} <strong>${contractExisting.genero === 'MASCULINO' ? 'COMPRADOR' : 'COMPRADORA'}</strong> na condição de ${contractExisting.genero === 'MASCULINO' ? 'devedor' : 'devedora'}, transfere à <strong>VENDEDORA</strong> em alienação fiduciária, o bem objeto da presente transação e descrito na cláusula 1ª, cuja alienação perdurará até a efetiva quitação da última parcela avençada.</p>
+                            <p><strong>CLÁUSULA 4º -</strong> Que no caso de inadimplemento ${contractExisting.genero === 'MASCULINO' ? 'o' : 'a'} <strong>${contractExisting.genero === 'MASCULINO' ? 'COMPRADOR' : 'COMPRADORA'}</strong> ficará ${contractExisting.genero === 'MASCULINO' ? 'sujeito' : 'sujeita'} ao pagamento de multa de 2% (dois por cento) ao mês sobre a parcela vencida, além de juros à MORA de 0,33% (zero vírgula trinta e três por cento) sobre o saldo devedor atualizado.</p>
+                            <p><strong>CLÁUSULA 5º -</strong> Que nesta DATA ${dataContrato} ${contractExisting.genero === 'MASCULINO' ? 'o' : 'a'} <strong>${contractExisting.genero === 'MASCULINO' ? 'COMPRADOR' : 'COMPRADORA'}</strong> emite em favor da credora uma nota promissória no valor total da dívida, podendo ocorrer o protesto em caso de inadimplemento de três prestações, que serão objeto de protesto ou notificação para constituição em mora ${contractExisting.genero === 'MASCULINO' ? 'do devedor' : 'da devedora'}.</p>
                             <p><strong>CLÁUSULA 6º -</strong> Que ocorrendo o inadimplemento, a <strong>VENDEDORA</strong> depois de vencidas três parcelas mensais, poderá retomar o bem dado em alienação fiduciária, facultando ao mesmo vender a terceiros o bem objeto do presente.</p>
-                            <p><strong>CLÁUSULA 7º -</strong> Que no caso de busca e apreensão a mesma será fulcrada no Dec. Lei n.º 911/69 e em suas disposições, respondendo o <strong>COMPRADOR</strong> pelas custas processuais e honorários de advogado, além de multa contratual incidente sobre o saldo devedor.</p>
-                            <p><strong>CLÁUSULA 8º -</strong> Que o <strong>COMPRADOR</strong> ppoderá quitar antecipadamente a dívida objeto deste instrumento, com a cotação de juros com base em tabela elaborada pela <strong>VENDEDORA</strong>, que após o recebimento integral do valor.</p>
+                            <p><strong>CLÁUSULA 7º -</strong> Que no caso de busca e apreensão a mesma será fulcrada no Dec. Lei n.º 911/69 e em suas disposições, respondendo ${contractExisting.genero === 'MASCULINO' ? 'o' : 'a'} <strong>${contractExisting.genero === 'MASCULINO' ? 'COMPRADOR' : 'COMPRADORA'}</strong> pelas custas processuais e honorários de advogado, além de multa contratual incidente sobre o saldo devedor.</p>
+                            <p><strong>CLÁUSULA 8º -</strong> Que ${contractExisting.genero === 'MASCULINO' ? 'o' : 'a'} <strong>${contractExisting.genero === 'MASCULINO' ? 'COMPRADOR' : 'COMPRADORA'}</strong> poderá quitar antecipadamente a dívida objeto deste instrumento, com a cotação de juros com base em tabela elaborada pela <strong>VENDEDORA</strong>, que após o recebimento integral do valor.</p>
                             <p><strong>CLÁUSULA 9º -</strong> Que as partes elegem o foro da Comarca de São Miguel-RN para dirimirem eventuais dúvidas do presente.</p>
                             ${avalista && enderecoAvalista ?
-                `<p><strong>CLÁUSULA 10º -</strong> Que assina como AVALISTA do presente contrato ${avalista.nome}, ${avalista.profissao}, ${enderecoAvalista.logradouro + ', Nº' + enderecoAvalista.numero + ', ' + enderecoAvalista.bairro + ', ' + enderecoAvalista.cidade + ' - ' + enderecoAvalista.uf + ', CEP nº ' + formatCEP(enderecoAvalista.cep)}, portador do CPF N° ${formatCPF(avalista.cpf)}, que responderá solidariamente pela obrigação constante do presente instrumento.</p>`
+                `<p><strong>CLÁUSULA 10º -</strong> Que assina como AVALISTA do presente contrato ${avalista.nome.toUpperCase()}, ${avalista.profissao.toUpperCase()}, residente no endereço ${enderecoAvalista.logradouro.toUpperCase() + ', Nº' + enderecoAvalista.numero + ', ' + enderecoAvalista.bairro.toUpperCase() + ', ' + enderecoAvalista.cidade.toUpperCase() + ' - ' + enderecoAvalista.uf.toUpperCase() + ', CEP nº ' + formatCEP(enderecoAvalista.cep)}, portador(a) do CPF N° ${formatCPF(avalista.cpf)}, que responderá solidariamente pela obrigação constante do presente instrumento.</p>`
                 :
                 ''
             }
@@ -254,7 +255,7 @@ export async function generateContractPDF(contractId: string, userId: string, ca
                         <div class="signature">
                             <hr />
                             <p>${contractExisting.nome.toUpperCase()}</p>
-                            <p>COMPRADOR</p>
+                            <p>${contractExisting.genero === 'MASCULINO' ? 'COMPRADOR' : 'COMPRADORA'}</p>
                             <p>CPF: ${formatCPF(contractExisting.cpf)}</p>
                         </div>
                         ${avalista && enderecoAvalista ?
@@ -292,15 +293,15 @@ export async function generateContractPDF(contractId: string, userId: string, ca
                                     <td class="half-width">E-mail: ${contractExisting.email}</td>
                                 </tr>
                                 <tr>
-                                    <td class="half-width">Logradouro: ${enderecoCliente.logradouro}</td>
+                                    <td class="half-width">Logradouro: ${enderecoCliente.logradouro.toUpperCase()}</td>
                                     <td class="half-width">Número: ${enderecoCliente.numero}</td>
                                 </tr>
                                 <tr>
-                                    <td class="half-width">Bairro: ${enderecoCliente.bairro}</td>
-                                    <td class="half-width">Cidade: ${enderecoCliente.cidade}</td>
+                                    <td class="half-width">Bairro: ${enderecoCliente.bairro.toUpperCase()}</td>
+                                    <td class="half-width">Cidade: ${enderecoCliente.cidade.toUpperCase()}</td>
                                 </tr>
                                 <tr>
-                                    <td class="half-width">UF: ${enderecoCliente.uf}</td>
+                                    <td class="half-width">UF: ${enderecoCliente.uf.toUpperCase()}</td>
                                     <td class="half-width">CEP: ${formatCEP(enderecoCliente.cep)}</td>
                                 </tr>
                                 <tr>
@@ -311,7 +312,7 @@ export async function generateContractPDF(contractId: string, userId: string, ca
                                 </tr>
                                 <tr>
                                     <td colspan="2">
-                                        Alienação fiduciária sobre bens de propriedade do <span class="bold">COMPRADOR</span> ou do <span class="bold">DEVEDOR SOLIDÁRIO COOBRIGADO</span>, a qual será formalizada em instrumento separado na forma do artigo 32 da Lei n°10.931/04 conforme descrito no quadro 6.
+                                        Alienação fiduciária sobre bens de propriedade ${contractExisting.genero === 'MASCULINO' ? 'do' : 'da'} <span class="bold">${contractExisting.genero === 'MASCULINO' ? 'COMPRADOR' : 'COMPRADORA'}</span> ou do(a) <span class="bold">DEVEDOR(A) SOLIDÁRIO(A) COOBRIGADO</span>, a qual será formalizada em instrumento separado na forma do artigo 32 da Lei n°10.931/04 conforme descrito no quadro 6.
                                     </td>
                                 </tr>
                                 <tr>
@@ -382,27 +383,27 @@ export async function generateContractPDF(contractId: string, userId: string, ca
                                     <td colspan="2">Descrição do sistema: ${contractExisting.potModulos}kWp de potência com módulos fotovoltaicos ${contractExisting.modeloModulos}, ${contractExisting.potInversor}kW de inversor(es) ${contractExisting.modeloInversor} e estruturas de fixação.</td>
                                 </tr>
                                 <tr>
-                                    <td colspan="2">Local da instalação: ${enderecoCliente.logradouro + ', Nº' + enderecoCliente.numero + ', ' + enderecoCliente.bairro + ', ' + enderecoCliente.cidade + ' - ' + enderecoCliente.uf + ', CEP nº ' + formatCEP(enderecoCliente.cep)}</td>
+                                    <td colspan="2">Local da instalação: ${enderecoCliente.logradouro.toUpperCase() + ', Nº' + enderecoCliente.numero + ', ' + enderecoCliente.bairro.toUpperCase() + ', ' + enderecoCliente.cidade.toUpperCase() + ' - ' + enderecoCliente.uf.toUpperCase() + ', CEP nº ' + formatCEP(enderecoCliente.cep)}</td>
                                 </tr>
                             </table>
                         </div>
                     </div>
                     <div class="page">
                         <div class="contract-container">
-                            <p>Eu, ${contractExisting.nome}, Portador do RG n° ${formatRG(contractExisting.rg)} e inscrito no CPF n° ${formatCPF(contractExisting.cpf)}<strong>("COMPRADOR")</strong>, do sistema de energia solar fotovoltaica de ${contractExisting.potModulos}kWp de Potência, de contrato emitido ${dataContrato} no valor de ${valorTotal}, da empresa Gurgel Azevedo e Teófilo Serviços de Engenharia LTDA, inscrita no CNPJ 33.651.184/0001-09, vem pelo presente documento declarar que:</p>
+                            <p>Eu, ${contractExisting.nome.toUpperCase()}, ${contractExisting.genero === 'MASCULINO' ? 'Portador' : 'portadora'} do RG n° ${formatRG(contractExisting.rg)} e ${contractExisting.genero === 'MASCULINO' ? 'inscrito' : 'inscrita'} no CPF n° ${formatCPF(contractExisting.cpf)}<strong>("${contractExisting.genero === 'MASCULINO' ? 'COMPRADOR' : 'COMPRADORA'}")</strong>, do sistema de energia solar fotovoltaica de ${contractExisting.potModulos}kWp de Potência, de contrato emitido ${dataContrato} no valor de ${valorTotal}, da empresa Gurgel Azevedo e Teófilo Serviços de Engenharia LTDA, inscrita no CNPJ 33.651.184/0001-09, vem pelo presente documento declarar que:</p>
                         </div>
                         <div class="contract-recuo">
                             <div class="contract-recuo-content">
                                 <p>(i)</p>
-                                <p>Declara que o imóvel no qual será instalado o sistema fotovoltaico adquirido com os recursos da vendedora é de propriedade do comprador ou de seus familiares, sendo que o comprador detém o direito de uso e/ou posse do referido imóvel;</p>
+                                <p>Declara que o imóvel no qual será instalado o sistema fotovoltaico adquirido com os recursos da vendedora é de propriedade do ${contractExisting.genero === 'MASCULINO' ? 'comprador' : 'compradora'} ou de seus familiares, sendo que ${contractExisting.genero === 'MASCULINO' ? 'o' : 'a'} ${contractExisting.genero === 'MASCULINO' ? 'comprador' : 'compradora'} detém o direito de uso e/ou posse do referido imóvel;</p>
                             </div>
                             <div class="contract-recuo-content">
                                 <p>(ii)</p>
-                                <p>Confirmo e ratifico que autorizo a instalação e manutenção, por prazo indeterminado, de dispositivo eletrônico de propriedade da vendedora, juntamente ao sistema de energia solar fotovoltaica (“Equipamento”), o qual poderá ser utilizado para captação dos dados de funcionamento do Equipamento e de consumo de energia do <strong>COMPRADOR</strong>, e desligamento remoto do Equipamento, entre outros;  </p>
+                                <p>Confirmo e ratifico que autorizo a instalação e manutenção, por prazo indeterminado, de dispositivo eletrônico de propriedade da vendedora, juntamente ao sistema de energia solar fotovoltaica (“Equipamento”), o qual poderá ser utilizado para captação dos dados de funcionamento do Equipamento e de consumo de energia ${contractExisting.genero === 'MASCULINO' ? 'do' : 'da'}do <strong>${contractExisting.genero === 'MASCULINO' ? 'COMPRADOR' : 'COMPRADORA'}</strong>, e desligamento remoto do Equipamento, entre outros;  </p>
                             </div>
                             <div class="contract-recuo-content">
                                 <p>(iii)</p>
-                                <p>Concordo e autorizo, de forma livre, expressa, informada e inequívoca, conforme inciso I do art. 7º da Lei nº 13.709/2018 (Lei Geral de Proteção de Dados Pessoais), observados também os incisos II, V, VI e IX do art. 7º da Lei nº 13.709/2018, que a <strong>VENDEDORA</strong>, por intermédio do Dispositivo, realize todo e qualquer Tratamento dos dados pessoais do <strong>COMPRADOR</strong> que tenham sido fornecidos à e/ou obtidos pela <strong>VENDEDORA</strong> (incluindo, entre outros, os dados de funcionamento e geração de energia pelo Equipamento e de consumo de energia do <strong>COMPRADOR</strong>), bem como daqueles necessários para a execução dos instrumentos contratuais celebrados entre as Partes. Para fins desta cláusula o termo definido “Tratamento” significa, de maneira direta ou indireta, coletar, obter, produzir, compilar, classificar, utilizar, acessar, reproduzir, transmitir, distribuir, processar, arquivar, armazenar, tratar, avaliar, controlar, eliminar, modificar, comunicar, transferir, difundir e/ou extrair os dados pessoais do <strong>COMPRADOR</strong>;</p>
+                                <p>Concordo e autorizo, de forma livre, expressa, informada e inequívoca, conforme inciso I do art. 7º da Lei nº 13.709/2018 (Lei Geral de Proteção de Dados Pessoais), observados também os incisos II, V, VI e IX do art. 7º da Lei nº 13.709/2018, que a <strong>VENDEDORA</strong>, por intermédio do Dispositivo, realize todo e qualquer Tratamento dos dados pessoais ${contractExisting.genero === 'MASCULINO' ? 'do' : 'da'} <strong>${contractExisting.genero === 'MASCULINO' ? 'COMPRADOR' : 'COMPRADORA'}</strong> que tenham sido fornecidos à e/ou obtidos pela <strong>VENDEDORA</strong> (incluindo, entre outros, os dados de funcionamento e geração de energia pelo Equipamento e de consumo de energia ${contractExisting.genero === 'MASCULINO' ? 'do' : 'da'} <strong>${contractExisting.genero === 'MASCULINO' ? 'COMPRADOR' : 'COMPRADORA'}</strong>), bem como daqueles necessários para a execução dos instrumentos contratuais celebrados entre as Partes. Para fins desta cláusula o termo definido “Tratamento” significa, de maneira direta ou indireta, coletar, obter, produzir, compilar, classificar, utilizar, acessar, reproduzir, transmitir, distribuir, processar, arquivar, armazenar, tratar, avaliar, controlar, eliminar, modificar, comunicar, transferir, difundir e/ou extrair os dados pessoais ${contractExisting.genero === 'MASCULINO' ? 'do' : 'da'} <strong>${contractExisting.genero === 'MASCULINO' ? 'COMPRADOR' : 'COMPRADORA'}</strong>;</p>
                             </div>
                             <div class="contract-recuo-content">
                                 <p>(iv)</p>
@@ -412,7 +413,7 @@ export async function generateContractPDF(contractId: string, userId: string, ca
                     </div>
                     <div class="page">
                         <div class="contract-container">
-                            <p>O <strong>COMPRADOR</strong> firma o presente Termo e se obriga, em caráter irrevogável e irretratável, por si e por seus eventuais sucessores, às declarações e condições aqui previstas.</p>
+                            <p>${contractExisting.genero === 'MASCULINO' ? 'O' : 'A'} <strong>${contractExisting.genero === 'MASCULINO' ? 'COMPRADOR' : 'COMPRADORA'}</strong> firma o presente Termo e se obriga, em caráter irrevogável e irretratável, por si e por seus eventuais sucessores, às declarações e condições aqui previstas.</p>
                             <p>Atenciosamente,</p>
                         <div>
                         <div class="contract-details">
@@ -422,19 +423,19 @@ export async function generateContractPDF(contractId: string, userId: string, ca
                         <div class="signature">
                             <hr />
                             <p>${contractExisting.nome.toUpperCase()}</p>
-                            <p>COMPRADOR</p>
+                            <p>${contractExisting.genero === 'MASCULINO' ? 'COMPRADOR' : 'COMPRADORA'}</p>
                             <p>CPF: ${formatCPF(contractExisting.cpf)}</p>
                         </div>
                         ${avalista && enderecoAvalista ?
-                                `<div class="signature">
+                `<div class="signature">
                                     <hr />
                                     <p>${avalista.nome.toUpperCase()}</p>
                                     <p>AVALISTA</p>
                                     <p>CPF: ${formatCEP(avalista.cpf)}</p>
                                 </div>`
-                            :
-                                ''
-                        }
+                :
+                ''
+            }
                         <div class="signature">
                             <hr />
                             <p>GURGEL AZEVEDO E TEOFILO SERVIÇOS DE ENGENHARIA LTDA</p>

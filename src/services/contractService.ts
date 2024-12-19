@@ -1,4 +1,4 @@
-import { EstadoCivil } from '@prisma/client';
+import { EstadoCivil, Genero } from '@prisma/client';
 import prismaClient from '../prisma';
 
 class ContractService {
@@ -38,6 +38,7 @@ class ContractService {
         cidadeAvalista: string,
         ufAvalista: string,
         cepAvalista: string,
+        genero: Genero,
         userId: string
     ) {
         try {
@@ -98,6 +99,7 @@ class ContractService {
                         priceParcela: priceParcela,
                         priceTotal: priceTotal,
                         quantParcelas: quantParcelas,
+                        genero: genero,
                         enderecoId: newAddress.id,
                         avalistaId: newAvalista ? newAvalista.id : null,
                         userId: userId
@@ -344,6 +346,7 @@ class ContractService {
         cidadeAvalista: string,
         ufAvalista: string,
         cepAvalista: string,
+        genero: Genero
     ) {
         try {
             return await prismaClient.$transaction(async (prisma) => {
@@ -447,7 +450,7 @@ class ContractService {
                     data: {
                         nome, email, profissao, estadoCivil, dataNascimento, cpf, rg, dataContrato, carencia,
                         dataPrimeiraParcela, quantParcelas, priceTotal, priceParcela, modeloModulos,
-                        potModulos, modeloInversor, potInversor,
+                        potModulos, modeloInversor, potInversor, genero,
                         avalistaId: updatedAvalista ? updatedAvalista.id : null
                     }
                 });
