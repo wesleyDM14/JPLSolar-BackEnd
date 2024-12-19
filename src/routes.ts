@@ -10,6 +10,7 @@ import DashboardController from "./controllers/dashboardController";
 import WarningController from "./controllers/warningController";
 import PartnerController from "./controllers/partnerController";
 import ParcelaController from "./controllers/parcelaController";
+import TasksController from "./controllers/tasksController";
 
 const router = Router();
 const userController = new UserController();
@@ -20,6 +21,7 @@ const dashboardController = new DashboardController();
 const warningController = new WarningController();
 const partnerController = new PartnerController();
 const parcelaController = new ParcelaController();
+const tasksController = new TasksController();
 
 //CRUD para Usuário
 router.post('/login', userController.authenticateUser.bind(userController));
@@ -94,5 +96,11 @@ router.get('/clients/:clientId/parcelas', authenticateUser, parcelaController.ge
 router.get('parcelas/:parcelaId', authenticateUser, parcelaController.getParcelaById.bind(parcelaController));
 router.put('/parcelas/:parcelaId', authenticateUser, parcelaController.updateParcela.bind(parcelaController));
 router.delete('/parcelas/:parcelaId', authenticateUser, parcelaController.deleteParcela.bind(parcelaController));
+
+//rotas para tarefas
+router.post('/columns', authenticateUser, tasksController.createColumn.bind(tasksController));
+router.post('/tasks', authenticateUser, tasksController.createTask.bind(tasksController));
+router.get('/columns', authenticateUser, tasksController.getColumnsByUserId.bind(tasksController));
+router.put('/tasks/:taskId', authenticateUser, tasksController.updateTask.bind(tasksController));
 
 export { router };
