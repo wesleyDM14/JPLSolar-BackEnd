@@ -102,5 +102,7 @@ router.post('/columns', authenticateUser, tasksController.createColumn.bind(task
 router.post('/tasks', authenticateUser, tasksController.createTask.bind(tasksController));
 router.get('/columns', authenticateUser, tasksController.getColumnsByUserId.bind(tasksController));
 router.put('/tasks/:taskId', authenticateUser, tasksController.updateTask.bind(tasksController));
+router.delete('/columns/:columnId', authenticateUser, tasksController.deleteColumn.bind(tasksController));
+router.delete('/tasks/:taskId', authenticateUser, tasksController.deleteTask.bind(tasksController));
 
 export { router };

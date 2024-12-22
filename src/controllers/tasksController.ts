@@ -29,13 +29,15 @@ class TasksController {
 
     async createTask(req: Request, res: Response) {
         try {
-            const { name, columnId } = req.body;
+            const { name, columnId, description, data } = req.body;
 
-            if (!name || !columnId) {
-                return res.status(400).json({ message: 'Nome da tarefa ou id da coluna é obrogatório' });
+            if (!name || !columnId || !description) {
+                return res.status(400).json({ message: 'Dados faltando na criação de tarefa.' });
             }
 
-            const newTask = await tasksService.createTask(req.user.id, columnId, name);
+            const taskDateTime = data ? new Date(data) : null;
+
+            const newTask = await tasksService.createTask(req.user.id, columnId, name, description, taskDateTime);
 
             return res.status(201).json(newTask);
         } catch (error: unknown) {
@@ -68,15 +70,23 @@ class TasksController {
     async updateTask(req: Request, res: Response) {
         try {
             const taskId = req.params.taskId;
-            const { name, columnId } = req.body;
+            const { name, description, data, columnId, position } = req.body;
 
-            if (!name || !columnId || !taskId) {
-                return res.status(400).json({ message: 'Nome da tarefa ou id da coluna é obrogatório' });
+            if (!taskId) {
+                return res.status(400).json({ message: 'O ID da tarefa é obrigatório.' });
             }
 
-            const newTask = await tasksService.updateTask(columnId, taskId, name, req.user.id);
+            const updatedData = {
+                name,
+                description,
+                dataFinal: data ? new Date(data) : null,
+                columnId,
+                position,
+            };
 
-            return res.status(201).json(newTask);
+            const updatedTask = await tasksService.updateTask(taskId, req.user.id, updatedData);
+
+            return res.status(200).json({ task: updatedTask, message: 'Tarefa atualziada com sucesso.' });
         } catch (error: unknown) {
             if (error instanceof Error) {
                 console.error('Erro ao criar coluna de tarefas: ' + error.message);
@@ -87,6 +97,51 @@ class TasksController {
             }
         }
     }
+
+    async deleteColumn(req: Request, res: Response) {
+        try {
+            const columnId = req.params.columnId;
+
+            if (!columnId) {
+                return res.status(400).json({ message: 'ID de coluna não informado.' });
+            }
+
+            await tasksService.deleteColumn(columnId, req.user.id);
+
+            return res.status(200).json({ message: 'Coluna deletada com sucesso.' });
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error('Erro ao deletar coluna de tarefas: ' + error.message);
+                res.status(500).json({ message: 'Erro ao deletar coluna de tarefas: ' + error.message });
+            } else {
+                console.error('Erro ao deletar coluna de tarefas: Erro desconhecido.');
+                res.status(500).json({ message: 'Erro ao deletar coluna de tarefas: Erro desconhecido.' });
+            }
+        }
+    }
+
+    async deleteTask(req: Request, res: Response) {
+        try {
+            const taskId = req.params.taskId;
+
+            if (!taskId) {
+                return res.status(400).json({ message: 'ID de tarefa não informado.' });
+            }
+
+            await tasksService.deleteTask(taskId, req.user.id);
+
+            return res.status(200).json({ message: 'Tarefa deletada com sucesso.' });
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error('Erro ao deletar tarefa: ' + error.message);
+                res.status(500).json({ message: 'Erro ao deletar tarefa: ' + error.message });
+            } else {
+                console.error('Erro ao deletar tarefa: Erro desconhecido.');
+                res.status(500).json({ message: 'Erro ao deletar tarefa: Erro desconhecido.' });
+            }
+        }
+    }
+
 
 }
 

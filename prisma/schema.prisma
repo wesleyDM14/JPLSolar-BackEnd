@@ -183,6 +183,9 @@ model Column {
     id    String @id @default(uuid())
     title String
 
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
     montadorId String
     montador   User   @relation("MontadorColuna", fields: [montadorId], references: [id], onDelete: Cascade)
     Task       Task[]
@@ -193,9 +196,13 @@ model Task {
     name        String
     description String
     dataFinal   DateTime?
+    position    Int @default(1)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
     columnId String
-    columm   Column @relation(fields: [columnId], references: [id])
+    columm   Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
 }
 
 enum EstadoCivil {
