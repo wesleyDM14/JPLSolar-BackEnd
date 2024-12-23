@@ -7,7 +7,8 @@
     "dev": "ts-node-dev src/server.ts",
     "update-solar-plants": "ts-node src/functions/updatePlantStatusData.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "heroku-postbuild": "yarn build"
   },
   "dependencies": {
     "@prisma/client": "^5.18.0",
