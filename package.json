@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "ts-node-dev src/server.ts",
-    "update-solar-plants": "ts-node src/functions/updatePlantStatusData.ts",
+    "update-solar-plants": "node dist/functions/updatePlantStatusData.js",
     "build": "tsc",
     "start": "node dist/server.js",
     "heroku-postbuild": "yarn build"
