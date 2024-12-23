@@ -51,6 +51,14 @@ class WarningService {
         return existingWarning;
     }
 
+    async getWarningsUnreadCounter(userId: string) {
+        const warnings = await prismaClient.notification.findMany({
+            where: { userId: userId, isRead: false }
+        });
+
+        return warnings.length;
+    }
+
     async updateWarning(warningId: string, isReaded: boolean, userId: string, isAdmin: boolean) {
         const existingWarning = await prismaClient.notification.findUnique({ where: { id: warningId } });
 

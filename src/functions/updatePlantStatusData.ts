@@ -48,6 +48,9 @@ async function updatePlantData() {
                             return;
                         }
 
+                        const previousStatus = plant.status;
+                        const newStatus = plantData?.status;
+
                         await prismaClient.plant.update({
                             where: { id: plant.id },
                             data: {
@@ -56,6 +59,27 @@ async function updatePlantData() {
                                 updatedAt: new Date()
                             }
                         });
+
+                        // Verificar se deve gerar uma notificação
+                        if (newStatus === '-1' && previousStatus !== '-1') {
+                            const existingNotification = await prismaClient.notification.findFirst({
+                                where: {
+                                    userId: plant.montadorId,
+                                    message: `A usina com Código ${plant.code} está com erro.`,
+                                    isRead: false,
+                                }
+                            });
+
+                            if (!existingNotification) {
+                                await prismaClient.notification.create({
+                                    data: {
+                                        userId: plant.montadorId,
+                                        message: `A usina com Código ${plant.code} está com erro.`,
+                                    }
+                                });
+                                console.log(`Notificação criada para montador ID ${plant.montadorId} sobre a usina ${plant.id}`);
+                            }
+                        }
                     } finally {
                         completed += 1;
                         const progress = ((completed / totalPlants) * 100).toFixed(2);

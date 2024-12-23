@@ -113,6 +113,11 @@ class WarningController {
         }
     }
 
+    async getUnreadedWarningCounter(req: Request, res: Response) {
+        const count = await warningService.getWarningsUnreadCounter(req.user.id);
+        return res.status(200).json({ count: count });
+    }
+
     async updateWarning(req: Request, res: Response) {
         try {
             const warningId = req.params.warningId;

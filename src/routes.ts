@@ -75,6 +75,7 @@ router.get('/avisos', authenticateUser, IsAdminUser, warningController.getWarnin
 router.get('/users/:userId/warnings', authenticateUser, warningController.getWarningByUserId.bind(warningController));
 router.get('/myWarnings', authenticateUser, warningController.getWarningByUserLoggedIn.bind(warningController));
 router.get('/avisos/:warningId', authenticateUser, warningController.getWarningById.bind(warningController));
+router.get('/getUnreadedNotification', authenticateUser, warningController.getUnreadedWarningCounter.bind(warningController));
 router.put('/avisos/:warningId', authenticateUser, warningController.updateWarning.bind(warningController));
 router.delete('/avisos/:warningId', authenticateUser, warningController.deleteWarning.bind(warningController));
 
