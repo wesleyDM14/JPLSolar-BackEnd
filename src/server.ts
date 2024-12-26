@@ -5,6 +5,7 @@ import 'express-async-errors';
 import { setupGracefulShutdown } from "./functions/shutdown";
 import prismaClient from "./prisma";
 import { router } from "./routes";
+import { testAuthentication } from "./functions/testSicredi";
 
 const app = express();
 const PORT = process.env.PORT || 3333;
@@ -35,3 +36,4 @@ const server = app.listen(PORT, () => {
 });
 
 setupGracefulShutdown(server, prismaClient);
+testAuthentication();
