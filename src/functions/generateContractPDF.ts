@@ -68,7 +68,7 @@ export async function generateContractPDF(contractId: string, userId: string, ca
         });
 
         const dataFinal = calcularDataUltimaParcela(new Date(contractExisting.dataPrimeiraParcela), contractExisting.quantParcelas);
-        console.log(dataFinal);
+        
         const dataUltimaParcela = new Date(dataFinal).toLocaleDateString('pt-BR', {
             day: '2-digit',
             month: '2-digit',
@@ -130,7 +130,7 @@ export async function generateContractPDF(contractId: string, userId: string, ca
 
                         .signature {
                             text-align: center;
-                            margin-top: 20px !important;
+                            margin-top: 100px !important;
                         }
 
                         .center-text {
