@@ -87,13 +87,13 @@ export async function generateContractPDF(contractId: string, userId: string, ca
                     <style>
                         body {
                             font-family: 'Helvetica', sans-serif;
-                            font-size: 16px;
+                            font-size: 14px;
                             line-height: 1.5;
                             margin: 0;
                         }
 
                         h1 {
-                            font-size: 16px;
+                            font-size: 14px;
                             text-align: center;
                         }
 
@@ -117,7 +117,7 @@ export async function generateContractPDF(contractId: string, userId: string, ca
                         td {
                             border: 1px solid #000;
                             text-align: justify;
-                            font-size: 16px;
+                            font-size: 14px;
                             line-height: 1;
                             padding: 2;
                         }
