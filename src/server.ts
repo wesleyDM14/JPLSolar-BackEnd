@@ -36,4 +36,4 @@ const server = app.listen(PORT, () => {
 });
 
 setupGracefulShutdown(server, prismaClient);
-testAuthentication();
+//testAuthentication();
