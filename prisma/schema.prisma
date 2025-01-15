@@ -32,6 +32,8 @@ model User {
     contracts     Contract[]
     notifications Notification[]
 
+    conta Conta?
+
     montadorId String?
     montador   User?     @relation("MontadorClientes", fields: [montadorId], references: [id], onDelete: Cascade)
     clientes   User[]    @relation("MontadorClientes")
@@ -198,13 +200,31 @@ model Task {
     name        String
     description String
     dataFinal   DateTime?
-    position    Int @default(1)
+    position    Int       @default(1)
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
     columnId String
     columm   Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
+}
+
+model Conta {
+    id              String @id @default(uuid())
+    agencia         String
+    banco           String
+    posto           String
+    codBeneficiario String
+    cnpj            String @unique
+    empresa         String
+    conta           String
+    sicrediLogin    String @unique
+    sicrediPassword String
+
+    userId String @unique
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([conta, banco])
 }
 
 enum EstadoCivil {

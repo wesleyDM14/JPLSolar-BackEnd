@@ -1,12 +1,14 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from 'cors';
 import 'express-async-errors';
+import * as dotenv from 'dotenv';
 
 import { setupGracefulShutdown } from "./functions/shutdown";
 import prismaClient from "./prisma";
 import { router } from "./routes";
 import { testAuthentication } from "./functions/testSicredi";
 
+dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3333;
 
