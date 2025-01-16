@@ -11,6 +11,7 @@ import WarningController from "./controllers/warningController";
 import PartnerController from "./controllers/partnerController";
 import ParcelaController from "./controllers/parcelaController";
 import TasksController from "./controllers/tasksController";
+import FinancialController from "./controllers/financialController";
 
 const router = Router();
 const userController = new UserController();
@@ -22,6 +23,7 @@ const warningController = new WarningController();
 const partnerController = new PartnerController();
 const parcelaController = new ParcelaController();
 const tasksController = new TasksController();
+const financialController = new FinancialController();
 
 //CRUD para Usuário
 router.post('/login', userController.authenticateUser.bind(userController));
@@ -105,5 +107,8 @@ router.get('/columns', authenticateUser, tasksController.getColumnsByUserId.bind
 router.put('/tasks/:taskId', authenticateUser, tasksController.updateTask.bind(tasksController));
 router.delete('/columns/:columnId', authenticateUser, tasksController.deleteColumn.bind(tasksController));
 router.delete('/tasks/:taskId', authenticateUser, tasksController.deleteTask.bind(tasksController));
+
+//rotas para financieiro
+router.get('/financeiro/resumo', authenticateUser, financialController.getResume.bind(financialController));
 
 export { router };

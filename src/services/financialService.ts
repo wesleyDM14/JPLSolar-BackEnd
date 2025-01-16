@@ -58,6 +58,22 @@ class FinancialService {
         return response;
     }
 
+    async creteConta() {
+
+    }
+
+    async getContaByUser() {
+
+    }
+
+    async updateConta() {
+
+    }
+
+    async deleteConta() {
+
+    }
+
 }
 
 export default FinancialService;
