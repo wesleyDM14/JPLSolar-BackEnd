@@ -1,4 +1,5 @@
 import prismaClient from "../prisma";
+import { decryptPassword, encryptPassword } from "../utils/encryptPassword";
 
 class FinancialService {
 
@@ -58,20 +59,146 @@ class FinancialService {
         return response;
     }
 
-    async creteConta() {
+    async createConta(userId: string, agencia: string, banco: string, posto: string, codBeneficiario: string, cnpj: string, empresa: string, conta: string, sicrediLogin: string, sicrediPassword: string) {
+        const existingUser = await prismaClient.user.findUnique({ where: { id: userId } });
 
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
+
+        if (existingUser.role !== "MONTADOR") {
+            throw new Error('Usuário não habilitado para criação de conta.');
+        }
+
+        const existingConta = await prismaClient.conta.findUnique({ where: { userId: userId } });
+
+        if (existingConta) {
+            throw new Error('Usuário já possui conta cadastrada.');
+        }
+
+        const { encrypted, iv } = encryptPassword(sicrediPassword);
+
+        const newConta = await prismaClient.conta.create({
+            data: {
+                agencia: agencia,
+                conta: conta,
+                banco: banco,
+                cnpj: cnpj,
+                codBeneficiario: codBeneficiario,
+                empresa: empresa,
+                posto: posto,
+                sicrediLogin: sicrediLogin,
+                sicrediPassword: encrypted,
+                ivPassword: iv,
+                userId: userId,
+            }
+        });
+
+        return newConta;
     }
 
-    async getContaByUser() {
-
+    async getContas() {
+        const contas = await prismaClient.conta.findMany();
+        return contas;
     }
 
-    async updateConta() {
+    async getContaById(contaid: string, userId: string) {
+        const existingConta = await prismaClient.conta.findUnique({ where: { id: contaid } });
 
+        if (!existingConta) {
+            throw new Error('Conta não cadastrada no banco de dados.')
+        }
+
+        const existingUser = await prismaClient.user.findUnique({ where: { id: userId } });
+
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
+
+        if (existingConta.userId !== existingUser.id && existingUser.role !== 'ADMIN') {
+            throw new Error('Você não tem permissão para acessar esta conta.');
+        }
+
+        return existingConta;
     }
 
-    async deleteConta() {
+    async getContaByUser(userId: string) {
+        const existingUser = await prismaClient.user.findUnique({ where: { id: userId } });
 
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
+
+        const existingConta = await prismaClient.conta.findUnique({ where: { userId: userId } });
+
+        return existingConta;
+    }
+
+    async updateConta(userId: string, agencia: string, banco: string, posto: string, codBeneficiario: string, cnpj: string, empresa: string, conta: string, sicrediLogin: string, sicrediPassword: string, contaId: string) {
+        const existingUser = await prismaClient.user.findUnique({ where: { id: userId } });
+
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
+
+        const existingConta = await prismaClient.conta.findUnique({ where: { id: contaId } });
+
+        if (!existingConta) {
+            throw new Error('Conta não encontrada no banco de dados.');
+        }
+
+        if (existingConta.userId !== existingUser.id && existingUser.role !== 'ADMIN') {
+            throw new Error('Você não tem permissão para editar a conta.');
+        }
+
+        let newPassword = null;
+        let newIv = null;
+
+        if (sicrediPassword !== decryptPassword(existingConta.sicrediPassword, existingConta.ivPassword)) {
+            const { encrypted, iv } = encryptPassword(sicrediPassword);
+            newPassword = encrypted;
+            newIv = iv;
+        }
+
+        await prismaClient.conta.update({
+            where: { id: contaId },
+            data: {
+                agencia,
+                banco,
+                posto,
+                codBeneficiario,
+                cnpj,
+                conta,
+                empresa,
+                sicrediLogin,
+                sicrediPassword: newPassword ? newPassword : existingConta.sicrediPassword,
+                ivPassword: newIv ? newIv : existingConta.ivPassword
+            }
+        });
+
+        return;
+    }
+
+    async deleteConta(userId: string, contaId: string) {
+        const existingUser = await prismaClient.user.findUnique({ where: { id: userId } });
+
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
+
+        const existingConta = await prismaClient.conta.findUnique({ where: { id: contaId } });
+
+        if (!existingConta) {
+            throw new Error('Conta não encontrada no banco de dados.');
+        }
+
+        if (existingConta.userId !== existingUser.id && existingUser.role !== 'ADMIN') {
+            throw new Error('Você não tem permissão para deletar a conta.');
+        }
+
+        await prismaClient.conta.delete({ where: { id: contaId } });
+
+        return;
     }
 
 }

@@ -220,6 +220,7 @@ model Conta {
     conta           String
     sicrediLogin    String @unique
     sicrediPassword String
+    ivPassword      String
 
     userId String @unique
     user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)

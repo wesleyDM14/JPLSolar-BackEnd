@@ -110,5 +110,11 @@ router.delete('/tasks/:taskId', authenticateUser, tasksController.deleteTask.bin
 
 //rotas para financieiro
 router.get('/financeiro/resumo', authenticateUser, financialController.getResume.bind(financialController));
+router.post('/financeiro/conta', authenticateUser, financialController.createConta.bind(financialController));
+router.get('/financeiro/contas', authenticateUser, IsAdminUser, financialController.getContas.bind(financialController));
+router.get('/financeiro/conta/:contaId', authenticateUser, financialController.getContaById.bind(financialController));
+router.get('/financeiro/conta/user/:userId', authenticateUser, financialController.getContaByUser.bind(financialController));
+router.put('/financeiro/conta/:contaId', authenticateUser, financialController.updateConta.bind(financialController));
+router.delete('/financeiro/conta/:contaId', authenticateUser, financialController.deleteConta.bind(financialController));
 
 export { router };
