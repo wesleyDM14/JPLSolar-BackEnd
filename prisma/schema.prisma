@@ -34,11 +34,13 @@ model User {
 
     conta Conta?
 
-    montadorId String?
-    montador   User?     @relation("MontadorClientes", fields: [montadorId], references: [id], onDelete: Cascade)
-    clientes   User[]    @relation("MontadorClientes")
-    Parcela    Parcela[] @relation("ClienteParcela")
-    Column     Column[]  @relation("MontadorColuna")
+    montadorId           String?
+    montador             User?                  @relation("MontadorClientes", fields: [montadorId], references: [id], onDelete: Cascade)
+    clientes             User[]                 @relation("MontadorClientes")
+    Parcela              Parcela[]              @relation("ClienteParcela")
+    Column               Column[]               @relation("MontadorColuna")
+    ClienteFinanciamento ClienteFinanciamento[] @relation("MontadorClienteFinanciamento")
+    StatusFinanciamento  ClienteFinanciamento?
 }
 
 model Plant {
@@ -104,8 +106,10 @@ model Contract {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-    userId String
+    User                   User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId                 String
+    clienteFinanciamentoId String?               @unique
+    ClienteFinanciamento   ClienteFinanciamento?
 }
 
 model Endereco {
@@ -226,6 +230,30 @@ model Conta {
     user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@unique([conta, banco])
+}
+
+model ClienteFinanciamento {
+    id               String  @id @default(uuid())
+    nome             String
+    numParcelasTotal Int
+    valorParcela     Float
+    pagTotal         Float
+    custoImplantacao Float
+    lucro            Float
+    numParcelasRest  Int
+    valorQuitado     Float
+    valorRest        Float
+    sePagou          Boolean
+    notafiscal       Boolean
+
+    contractId String?   @unique
+    contract   Contract? @relation(fields: [contractId], references: [id])
+
+    clientId String? @unique
+    client   User?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
+    montadorId String
+    montador   User   @relation("MontadorClienteFinanciamento", fields: [montadorId], references: [id], onDelete: Cascade)
 }
 
 enum EstadoCivil {

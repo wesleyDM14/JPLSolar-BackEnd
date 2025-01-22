@@ -45,6 +45,18 @@ class FinancialService {
             }
         });
 
+        const conta = await prismaClient.conta.findUnique({ where: { userId: userId } });
+
+        let passwordDecrypted = null;
+
+        if (conta) {
+            passwordDecrypted = decryptPassword(conta.sicrediPassword, conta.ivPassword);
+        }
+
+        if (conta && passwordDecrypted) {
+            conta.sicrediPassword = passwordDecrypted;
+        }
+
         let response = {
             recebido,
             num_pagos,
@@ -54,6 +66,7 @@ class FinancialService {
             num_vencidas,
             a_vencer,
             num_avencer,
+            conta,
         };
 
         return response;
