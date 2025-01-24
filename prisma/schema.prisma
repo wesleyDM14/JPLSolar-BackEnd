@@ -243,8 +243,9 @@ model ClienteFinanciamento {
     numParcelasRest  Int
     valorQuitado     Float
     valorRest        Float
-    sePagou          Boolean
-    notafiscal       Boolean
+    sePagou          Boolean @default(false)
+    notafiscal       Boolean @default(false)
+    terceiro         Boolean @default(false)
 
     contractId String?   @unique
     contract   Contract? @relation(fields: [contractId], references: [id])

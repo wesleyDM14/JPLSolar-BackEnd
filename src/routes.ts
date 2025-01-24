@@ -114,7 +114,17 @@ router.post('/financeiro/conta', authenticateUser, financialController.createCon
 router.get('/financeiro/contas', authenticateUser, IsAdminUser, financialController.getContas.bind(financialController));
 router.get('/financeiro/conta/:contaId', authenticateUser, financialController.getContaById.bind(financialController));
 router.get('/financeiro/conta/user/:userId', authenticateUser, financialController.getContaByUser.bind(financialController));
+router.get('/financeiro/selfConta', authenticateUser, financialController.getSelfConta.bind(financialController));
 router.put('/financeiro/conta/:contaId', authenticateUser, financialController.updateConta.bind(financialController));
 router.delete('/financeiro/conta/:contaId', authenticateUser, financialController.deleteConta.bind(financialController));
+
+//rotas para cliente financiamento
+router.post('/financeiro/clientes', authenticateUser, financialController.createClientFinancial.bind(financialController));
+router.get('/financeiro/clientes', authenticateUser, IsAdminUser, financialController.getClientsFinancial.bind(financialController));
+router.get('/financeiro/myClients', authenticateUser, financialController.getSelfClientsFinancial.bind(financialController));
+router.get('/financeiro/clientes/user/:userId', authenticateUser, IsAdminUser, financialController.getClientsFinancialByUserId.bind(financialController));
+router.get('/financeiro/clientes/:clientId', authenticateUser, financialController.getClientById.bind(financialController));
+router.put('/financeiro/clientes/:clientId', authenticateUser, financialController.updateClientFinancial.bind(financialController));
+router.delete('/financeiro/clientes/:clientId', authenticateUser, financialController.deleteClientFinancial.bind(financialController));
 
 export { router };

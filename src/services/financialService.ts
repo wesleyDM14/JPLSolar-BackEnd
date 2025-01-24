@@ -214,6 +214,142 @@ class FinancialService {
         return;
     }
 
+    async createClientFinancial(userId: string, nome: string, numParcelasTotal: number, valorParcela: number, pagTotal: number, custoImplantacao: number, lucro: number, numParcelasRest: number, valorQuitado: number, valorRest: number, terceiro: boolean, notafiscal: boolean) {
+        const existingUser = await prismaClient.user.findUnique({
+            where: { id: userId }
+        });
+
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
+
+        const newClient = await prismaClient.clienteFinanciamento.create({
+            data: {
+                custoImplantacao: custoImplantacao,
+                lucro: lucro,
+                nome: nome,
+                numParcelasRest: numParcelasRest,
+                numParcelasTotal: numParcelasTotal,
+                pagTotal: pagTotal,
+                valorParcela: valorParcela,
+                valorQuitado: valorQuitado,
+                valorRest: valorRest,
+                sePagou: valorQuitado >= custoImplantacao,
+                terceiro: terceiro,
+                montadorId: userId,
+                notafiscal: notafiscal,
+            }
+        });
+
+        return newClient;
+    }
+
+    async getClientsFinancial() {
+        const clientsFinancial = await prismaClient.clienteFinanciamento.findMany();
+        return clientsFinancial;
+    }
+
+    async getClientsFinancialByUserId(userId: string) {
+        const existingUser = await prismaClient.user.findUnique({
+            where: { id: userId }
+        });
+
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
+
+        const clients = await prismaClient.clienteFinanciamento.findMany({ where: { montadorId: userId } });
+
+        return clients;
+    }
+
+    async getClientFinancialById(clientId: string, userId: string) {
+
+        const existingUser = await prismaClient.user.findUnique({ where: { id: userId } });
+
+        if (!existingUser) {
+            throw new Error('Usuário nao cadastrado no banco de dados.');
+        }
+
+        const client = await prismaClient.clienteFinanciamento.findUnique({ where: { id: clientId } });
+
+        if (!client) {
+            throw new Error('Cliente não encontrado no banco de dados.');
+        }
+
+        if (client.montadorId !== existingUser.id && existingUser.role !== 'ADMIN') {
+            throw new Error('Você não tem permissão para acessar este usuário.');
+        }
+
+        return client;
+    }
+
+    async updateClientFinancial(userId: string, clientId: string, nome: string, numParcelasTotal: number, valorParcela: number, pagTotal: number, custoImplantacao: number, lucro: number, numParcelasRest: number, valorQuitado: number, valorRest: number, terceiro: boolean, notafiscal: boolean) {
+        const existingUser = await prismaClient.user.findUnique({
+            where: { id: userId }
+        });
+
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
+
+        const existingClient = await prismaClient.clienteFinanciamento.findUnique({ where: { id: clientId } });
+
+        if (!existingClient) {
+            throw new Error('Cliente não encontrado no banco de dados');
+        }
+
+        if (existingClient.montadorId !== existingUser.id && existingUser.role !== 'ADMIN') {
+            throw new Error('Você não tem permissão para editar este cliente');
+        }
+
+        await prismaClient.clienteFinanciamento.update({
+            where: { id: clientId },
+            data: {
+                custoImplantacao: custoImplantacao,
+                lucro: lucro,
+                nome: nome,
+                numParcelasRest: numParcelasRest,
+                numParcelasTotal: numParcelasTotal,
+                pagTotal: pagTotal,
+                valorParcela: valorParcela,
+                valorQuitado: valorQuitado,
+                valorRest: valorRest,
+                sePagou: valorQuitado >= custoImplantacao,
+                terceiro: terceiro,
+                notafiscal: notafiscal,
+            }
+        });
+
+        return;
+    }
+
+    async deleteClientFinancial(clientFinancialId: string, userId: string) {
+        const existingUser = await prismaClient.user.findUnique({
+            where: { id: userId }
+        });
+
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
+
+        const existingClient = await prismaClient.clienteFinanciamento.findUnique({ where: { id: clientFinancialId } });
+
+        if (!existingClient) {
+            throw new Error('Cliente não encontrado no banco de dados');
+        }
+
+        if (existingClient.montadorId !== existingUser.id && existingUser.role !== 'ADMIN') {
+            throw new Error('Você não tem permissão para excluir este cliente');
+        }
+
+        await prismaClient.clienteFinanciamento.delete({
+            where: { id: clientFinancialId }
+        });
+
+        return;
+    }
+
 }
 
 export default FinancialService;
