@@ -246,7 +246,7 @@ class FinancialController {
 
     async getSelfClientsFinancial(req: Request, res: Response) {
         try {
-            const clients = financialService.getClientsFinancialByUserId(req.user.id);
+            const clients = await financialService.getClientsFinancialByUserId(req.user.id);
             return res.status(200).json(clients);
         } catch (error: unknown) {
             if (error instanceof Error) {
