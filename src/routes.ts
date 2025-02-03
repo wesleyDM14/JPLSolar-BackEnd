@@ -120,6 +120,7 @@ router.delete('/financeiro/conta/:contaId', authenticateUser, financialControlle
 
 //rotas para cliente financiamento
 router.post('/financeiro/clientes', authenticateUser, financialController.createClientFinancial.bind(financialController));
+router.post('/financeiro/clientes/import-from-contract', authenticateUser, financialController.createClientFinancialImport.bind(financialController));
 router.get('/financeiro/clientes', authenticateUser, IsAdminUser, financialController.getClientsFinancial.bind(financialController));
 router.get('/financeiro/myClients', authenticateUser, financialController.getSelfClientsFinancial.bind(financialController));
 router.get('/financeiro/clientes/user/:userId', authenticateUser, IsAdminUser, financialController.getClientsFinancialByUserId.bind(financialController));

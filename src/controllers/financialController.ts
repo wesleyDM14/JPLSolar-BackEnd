@@ -197,6 +197,30 @@ class FinancialController {
         }
     }
 
+    async createClientFinancialImport(req: Request, res: Response) {
+        try {
+
+            const { nome, numParcelasTotal, valorParcela, pagTotal, custoImplantacao, lucro, numParcelasRest, valorQuitado, valorRest, terceiro, notafiscal, contractId } = req.body;
+
+            if (!nome || !contractId || (numParcelasTotal === null || numParcelasTotal === undefined) || (valorParcela === null || valorParcela === undefined) || (pagTotal === null || pagTotal === undefined) || (custoImplantacao === null || custoImplantacao === undefined) || (lucro === null || lucro === undefined) || (numParcelasRest === null || numParcelasRest === undefined) || (valorQuitado === null || valorQuitado === undefined) || (valorRest === null || valorRest === undefined) || (terceiro === null || terceiro === undefined) || (notafiscal === null || notafiscal === undefined)) {
+                return res.status(403).json({ message: 'Valores para cliente financeiro inválidos.' });
+            }
+
+            const newClient = await financialService.importClientFinancialContract(req.user.id, nome, numParcelasTotal, valorParcela, pagTotal, custoImplantacao, lucro, numParcelasRest, valorQuitado, valorRest, terceiro, notafiscal, contractId);
+
+            return res.status(201).json(newClient);
+
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error('Erro ao criar cliente: ' + error.message);
+                res.status(500).json({ message: 'Erro ao criar cliente: ' + error.message });
+            } else {
+                console.error('Erro ao criar cliente: Erro desconhecido.');
+                res.status(500).json({ message: 'Erro ao criar cliente: Erro desconhecido.' });
+            }
+        }
+    }
+
     async getClientsFinancial(req: Request, res: Response) {
         try {
             if (req.user.userRole !== UserRole.ADMIN) {

@@ -244,6 +244,51 @@ class FinancialService {
         return newClient;
     }
 
+    async importClientFinancialContract(userId: string, nome: string, numParcelasTotal: number, valorParcela: number, pagTotal: number, custoImplantacao: number, lucro: number, numParcelasRest: number, valorQuitado: number, valorRest: number, terceiro: boolean, notafiscal: boolean, contractId: string) {
+        const existingContract = await prismaClient.contract.findUnique({
+            where: { id: contractId },
+        });
+
+        if (!existingContract) {
+            throw new Error('Contrato não encontrado no banco de dados.');
+        }
+
+        return await prismaClient.$transaction(async (prisma) => {
+            const newClient = await prisma.clienteFinanciamento.create({
+                data: {
+                    custoImplantacao: custoImplantacao,
+                    lucro: lucro,
+                    nome: nome,
+                    numParcelasRest: numParcelasRest,
+                    numParcelasTotal: numParcelasTotal,
+                    pagTotal: pagTotal,
+                    valorParcela: valorParcela,
+                    valorQuitado: valorQuitado,
+                    valorRest: valorRest,
+                    sePagou: valorQuitado >= custoImplantacao,
+                    terceiro: terceiro,
+                    montadorId: userId,
+                    notafiscal: notafiscal,
+                    contractId: contractId,
+                }
+            });
+
+            if (newClient) {
+                await prisma.contract.update({
+                    where: { id: contractId },
+                    data: {
+                        clienteFinanciamentoId: newClient.id
+                    }
+                });
+            }
+
+            return newClient;
+        }, {
+            timeout: 120000
+        });
+
+    }
+
     async getClientsFinancial() {
         const clientsFinancial = await prismaClient.clienteFinanciamento.findMany();
         return clientsFinancial;
@@ -343,11 +388,20 @@ class FinancialService {
             throw new Error('Você não tem permissão para excluir este cliente');
         }
 
-        await prismaClient.clienteFinanciamento.delete({
-            where: { id: clientFinancialId }
+        return await prismaClient.$transaction(async (prisma) => {
+            if (existingClient.contractId) {
+                await prisma.contract.update({
+                    where: { id: existingClient.contractId },
+                    data: {
+                        clienteFinanciamentoId: null
+                    }
+                });
+            }
+            await prisma.clienteFinanciamento.delete({
+                where: { id: clientFinancialId }
+            });
         });
 
-        return;
     }
 
 }
