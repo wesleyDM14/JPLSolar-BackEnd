@@ -8,7 +8,7 @@ export const testAuthentication = async () => {
         scope: 'cobranca',
     }, {
         headers: {
-            'x-api-key': process.env.SICREDI_TOKEN,
+            'x-api-key': process.env.SICREDI_API_KEY,
             context: 'COBRANCA',
             'Content-Type': 'application/x-www-form-urlencoded'
         },

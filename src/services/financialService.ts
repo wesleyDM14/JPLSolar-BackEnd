@@ -112,6 +112,13 @@ class FinancialService {
 
     async getContas() {
         const contas = await prismaClient.conta.findMany();
+
+        for (let index = 0; index < contas.length; index++) {
+            const element = contas[index];
+            const decriptedPassword = decryptPassword(element.sicrediPassword, element.ivPassword);
+            element.sicrediPassword = decriptedPassword;
+        }
+
         return contas;
     }
 
@@ -132,6 +139,9 @@ class FinancialService {
             throw new Error('Você não tem permissão para acessar esta conta.');
         }
 
+        const decriptedPassword = decryptPassword(existingConta.sicrediPassword, existingConta.ivPassword);
+        existingConta.sicrediPassword = decriptedPassword;
+
         return existingConta;
     }
 
@@ -143,6 +153,11 @@ class FinancialService {
         }
 
         const existingConta = await prismaClient.conta.findUnique({ where: { userId: userId } });
+
+        if (existingConta) {
+            const decriptedPassword = decryptPassword(existingConta.sicrediPassword, existingConta.ivPassword);
+            existingConta.sicrediPassword = decriptedPassword;
+        }
 
         return existingConta;
     }

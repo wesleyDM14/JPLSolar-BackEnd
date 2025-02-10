@@ -214,17 +214,21 @@ model Task {
 }
 
 model Conta {
-    id              String @id @default(uuid())
-    agencia         String
-    banco           String
-    posto           String
-    codBeneficiario String
-    cnpj            String @unique
-    empresa         String
-    conta           String
-    sicrediLogin    String @unique
-    sicrediPassword String
-    ivPassword      String
+    id               String    @id @default(uuid())
+    agencia          String
+    banco            String
+    posto            String
+    codBeneficiario  String
+    cnpj             String    @unique
+    empresa          String
+    conta            String
+    sicrediLogin     String    @unique
+    sicrediPassword  String
+    ivPassword       String
+    accessToken      String?
+    refreshToken     String?
+    tokenExpireAt    DateTime?
+    lastTokenRefresh DateTime?
 
     userId String @unique
     user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)

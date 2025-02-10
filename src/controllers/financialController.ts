@@ -109,7 +109,7 @@ class FinancialController {
 
     async getSelfConta(req: Request, res: Response) {
         try {
-            const conta = financialService.getContaByUser(req.user.id);
+            const conta = await financialService.getContaByUser(req.user.id);
             return res.status(200).json(conta);
         } catch (error: unknown) {
             if (error instanceof Error) {

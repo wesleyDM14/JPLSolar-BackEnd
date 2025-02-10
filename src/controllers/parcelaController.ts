@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import ParcelaService from "../services/parcelaService";
+import { sicrediBoletoService } from "../Api/services/SicrediBoletoService";
 
 const parcelaService = new ParcelaService();
 
