@@ -72,11 +72,13 @@ interface BoletoResponse {
 
 export class SicrediBoletoService {
     private readonly baseUrl: string;
+    private readonly pdfUrl: string;
 
     constructor() {
         this.baseUrl = process.env.NODE_ENV === 'production'
             ? 'https://api-parceiro.sicredi.com.br/cobranca/boleto/v1/boletos'
             : 'https://api-parceiro.sicredi.com.br/sb/cobranca/boleto/v1/boletos';
+        this.pdfUrl = `${this.baseUrl}/impressao`;
     }
 
     async gerarBoleto(userId: string, boletoData: BoletoRequest): Promise<BoletoResponse> {
@@ -105,6 +107,22 @@ export class SicrediBoletoService {
         );
 
         return response.data;
+    }
+
+    async imprimirBoleto(userId: string, linhaDigitavel: string): Promise<Buffer> {
+        const token = await sicrediAuthService.getValidToken(userId);
+        const apiKey = process.env.SICREDI_API_KEY;
+
+        const response = await axios.get(this.pdfUrl, {
+            params: { linhaDigitavel },
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'x-api-key': apiKey
+            },
+            responseType: 'arraybuffer'
+        });
+
+        return Buffer.from(response.data);
     }
 }
 

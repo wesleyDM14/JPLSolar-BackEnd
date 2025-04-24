@@ -52,6 +52,45 @@ class ParcelaService {
 
     }
 
+    async createSingleParcela(clientId: string, userId: string, valor: number, dataVencimento: Date) {
+        const existingClient = await prismaClient.user.findUnique({
+            where: {
+                id: clientId,
+                role: "CLIENTE",
+            },
+        });
+
+        if (!existingClient) {
+            throw new Error('Cliente não encontrado no banco de dados.');
+        }
+
+        const existingUser = await prismaClient.user.findUnique({
+            where: {
+                id: userId,
+            }
+        });
+
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
+
+        if (existingClient.montadorId !== userId && existingUser.role !== "ADMIN") {
+            throw new Error('Você não tem permissão para cadastrar novas parcelas para este cliente.');
+        }
+
+        const newParcela = await prismaClient.parcela.create({
+            data: {
+                clientId: clientId,
+                dataVencimento: dataVencimento,
+                valor: valor,
+                num: 1,
+                numTotal: 1,
+            }
+        });
+
+        return newParcela;
+    }
+
     async getParcelas() {
         return await prismaClient.parcela.findMany();
     }
