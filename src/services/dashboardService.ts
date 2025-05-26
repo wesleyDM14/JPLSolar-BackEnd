@@ -61,6 +61,68 @@ class DashboardService {
         }
     }
 
+    async getGoodweData(login: string, password: string) {
+        try {
+            const superApiInstance = superagent.agent();
+            const loginRes = await superApiInstance
+                .post('https://www.semsportal.com/api/v1/Common/CrossLogin')
+                .set('Content-Type', 'application/json')
+                .set('Token', JSON.stringify({
+                    version: 'v2.1.0',
+                    client: 'ios',
+                    language: 'en'
+                }))
+                .send({
+                    account: login,
+                    pwd: password
+                });
+
+            const loginData = loginRes.body.data;
+
+            if (!loginData?.token || !loginData?.uid || !loginData?.timestamp) {
+                throw new Error(`Dados incompletos no login para ${login}. Resposta: ${JSON.stringify(loginRes.body)}`);
+            }
+
+            const tokenHeader = JSON.stringify({
+                uid: loginData.uid,
+                timestamp: loginData.timestamp,
+                token: loginData.token,
+                client: 'ios',
+                version: 'v2.1.0',
+                language: 'pt-pt'
+            });
+
+            const apiBase = loginRes.body.api || 'https://us.semsportal.com/api/';
+
+            const stationRes = await superApiInstance
+                .post(`${apiBase}PowerStation/GetPowerStationIdByOwner`)
+                .set('Content-Type', 'application/json')
+                .set('token', tokenHeader)
+                .send({});
+
+            const powerStationId = stationRes.body.data;
+
+            if (!powerStationId) {
+                throw new Error(`Falha ao obter o ID da usina para login ${login}. Resposta da API: ${JSON.stringify(stationRes.body)}`);
+            }
+
+            const plantDetailRes = await superApiInstance
+                .post('https://us.semsportal.com/api/v3/PowerStation/GetPlantDetailByPowerstationId')
+                .set('Content-Type', 'application/json')
+                .set('token', tokenHeader)
+                .send({ powerStationId });
+
+            return {
+                status: plantDetailRes.body.data.info.status.toString(),
+                eTotal: plantDetailRes.body.data.kpi.total_power,
+            };
+
+
+        } catch (error) {
+            throw new Error(`Erro to get Goodwe Data: ${login} - ${error}`);
+        }
+    }
+
     async getABBData(login: string, password: string) {
         try {
             await superApi.get('https://www.auroravision.net/ums/v1/login?setCookie=true').auth(login, password);

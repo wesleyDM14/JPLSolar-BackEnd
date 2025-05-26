@@ -41,6 +41,8 @@ async function updatePlantData() {
                             plantData = await dashboardService.getCanadianData(plant.login, plant.password);
                         } else if (plant.inversor === Inversor.DEYE) {
                             plantData = await dashboardService.getDeyeData(plant.login, plant.password);
+                        } else if (plant.inversor === Inversor.GOODWE) {
+                            plantData = await dashboardService.getGoodweData(plant.login, plant.password);
                         } else if (plant.inversor === Inversor.GROWATT) {
                             plantData = await dashboardService.getGrowattData(plant.login, plant.password);
                         } else {
