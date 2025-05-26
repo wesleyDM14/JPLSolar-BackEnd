@@ -236,6 +236,8 @@ class SolarPlantController {
                 response = await solarPlantService.getCanadianParams(login, password, req.user.id);
             } else if (inversor === Inversor.DEYE) {
                 response = await solarPlantService.getDeyeParams(login, password, req.user.id);
+            } else if (inversor === Inversor.GOODWE) {
+                response = await solarPlantService.getGoodweParams(login, password, req.user.id);
             } else if (inversor === Inversor.GROWATT) {
                 response = await solarPlantService.getGrowattParams(login, password, req.user.id);
             } else {
@@ -270,6 +272,8 @@ class SolarPlantController {
                 response = await solarPlantService.getErrorDataListCanadian(login, password, year, plantId, req.user.id);
             } else if (inversor === Inversor.DEYE) {
                 response = await solarPlantService.getErrorDataListDeye(login, password, year, plantId, req.user.id);
+            } else if (inversor === Inversor.GOODWE) {
+                response = await solarPlantService.getErrorDataListGoodwe(login, password, year, plantId, req.user.id);
             } else if (inversor === Inversor.GROWATT) {
                 response = await solarPlantService.getErrorDataListGrowatt(login, password, year, plantId, req.user.id);
             } else {
@@ -304,6 +308,8 @@ class SolarPlantController {
                 response = await solarPlantService.getChartByTypeCanadian(login, password, date, type, plantId, req.user.id);
             } else if (inversor === Inversor.DEYE) {
                 response = await solarPlantService.getChartByTypeDeye(login, password, date, type, plantId, req.user.id);
+            } else if (inversor === Inversor.GOODWE) {
+                response = await solarPlantService.getChartByTypeGoodwe(login, password, date, type, plantId, req.user.id);
             } else if (inversor === Inversor.GROWATT) {
                 response = await solarPlantService.getChartByTypeGrowatt(login, password, date, type, plantId, deviceTypeName, deviceSN, req.user.id);
             } else {

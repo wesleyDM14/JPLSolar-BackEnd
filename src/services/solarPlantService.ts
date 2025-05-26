@@ -5,6 +5,7 @@ import { fetchGrowattData, getChartByType, getErrorDataListForYear } from "../fu
 import { fetchAbbData, getAbbErrorDataListForYear, getChartAbbByType } from "../functions/getAbbParams";
 import { fetchDeyeData, getChartDeyeByType, getDeyeErrorDataListForYear } from "../functions/getDeyeParams";
 import { fetchCanadianData, getCanadianErrorDataListForYear, getChartCanadianByType } from "../functions/getCanadianParams";
+import { fetchGoodweData, getChartGoodweByType, getGoodweErrorDataListForYear } from "../functions/getGoodweParams";
 
 class SolarPlantService {
 
@@ -318,6 +319,38 @@ class SolarPlantService {
         return response;
     }
 
+    async getGoodweParams(login: string, password: string, userId: string) {
+
+        const existingUser = await prismaClient.user.findFirst({ where: { id: userId } });
+
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
+
+        const existingSolarPlant = await prismaClient.plant.findFirst({
+            where: {
+                login: login,
+                password: password,
+            }
+        });
+
+        if (!existingSolarPlant) {
+            throw new Error('Planta Solar não encontrada no banco de dados.');
+        }
+
+        if (existingUser.role === 'MONTADOR' && existingSolarPlant.montadorId !== existingUser.id) {
+            throw new Error('Você não tem permissão para acessar a planta solar.');
+        }
+
+        if (existingUser.role === 'CLIENTE' && existingSolarPlant.clientId !== existingUser.id) {
+            throw new Error('Você não tem permissão para acessar a planta solar.');
+        }
+
+        const response = await fetchGoodweData(login, password);
+
+        return response;
+    }
+
     async getGrowattParams(login: string, password: string, userId: string) {
 
         const existingUser = await prismaClient.user.findFirst({ where: { id: userId } });
@@ -458,6 +491,33 @@ class SolarPlantService {
         return response;
     }
 
+    async getErrorDataListGoodwe(login: string, password: string, year: number, plantId: string, userId: string) {
+        const existingUser = await prismaClient.user.findFirst({ where: { id: userId } });
+
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
+
+        const existingSolarPlant = await prismaClient.plant.findFirst({
+            where: {
+                login: login,
+                password: password,
+            }
+        });
+
+        if (!existingSolarPlant) {
+            throw new Error('Planta Solar não encontrada no banco de dados.');
+        }
+
+        if (existingSolarPlant.montadorId !== existingUser.id && existingUser.role !== "ADMIN") {
+            throw new Error('Você não tem permissão para acessar a planta solar.');
+        }
+
+        const response = await getGoodweErrorDataListForYear(login, password, year, plantId);
+
+        return response;
+    }
+
     async getChartByTypeGrowatt(login: string, password: string, date: string, type: string, plantId: string, deviceTypeName: string, deviceSN: string, userId: string) {
         const existingUser = await prismaClient.user.findFirst({ where: { id: userId } });
 
@@ -562,6 +622,33 @@ class SolarPlantService {
         }
 
         const response = await getChartDeyeByType(login, password, date, type, plantId);
+
+        return response;
+    }
+
+    async getChartByTypeGoodwe(login: string, password: string, date: string, type: string, plantId: string, userId: string) {
+        const existingUser = await prismaClient.user.findFirst({ where: { id: userId } });
+
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado no banco de dados.');
+        }
+
+        const existingSolarPlant = await prismaClient.plant.findFirst({
+            where: {
+                login: login,
+                password: password,
+            }
+        });
+
+        if (!existingSolarPlant) {
+            throw new Error('Planta Solar não encontrada no banco de dados.');
+        }
+
+        if (existingSolarPlant.montadorId !== existingUser.id && existingUser.role !== "ADMIN") {
+            throw new Error('Você não tem permissão para acessar a planta solar.');
+        }
+
+        const response = await getChartGoodweByType(login, password, date, type, plantId);
 
         return response;
     }

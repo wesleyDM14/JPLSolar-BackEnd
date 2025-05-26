@@ -273,6 +273,7 @@ enum Inversor {
     ABB
     CANADIAN
     DEYE
+    GOODWE
     GROWATT
 }
 

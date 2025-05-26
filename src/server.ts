@@ -6,7 +6,6 @@ import * as dotenv from 'dotenv';
 import { setupGracefulShutdown } from "./functions/shutdown";
 import prismaClient from "./prisma";
 import { router } from "./routes";
-import { testAuthentication } from "./functions/testSicredi";
 
 dotenv.config();
 const app = express();
@@ -38,4 +37,3 @@ const server = app.listen(PORT, () => {
 });
 
 setupGracefulShutdown(server, prismaClient);
-//testAuthentication();
