@@ -2,6 +2,7 @@ import prismaClient from "../prisma";
 import growatt from "growatt";
 import superagent from "superagent";
 import crypto from 'crypto';
+import { scrappingDashboard, scrappingSolisData } from "../Api/WebScrapping/solisWebScrapping";
 
 const superApi = superagent.agent();
 
@@ -233,6 +234,25 @@ class DashboardService {
             return {
                 status: deviceInfo.body.data[0].deviceState.toString(),
                 eTotal: totalData.body.generationTotal
+            };
+        } catch (error) {
+            throw new Error(`Erro to get Canadian Data: ${login} - ${error}`);
+        }
+    }
+
+    async getSolisData(login: string, password: string) {
+        try {
+            const scrappingData = await scrappingDashboard(login, password);
+
+            const stationListResult = scrappingData.find(item => item.url.includes('/station/list'));
+            const detailMixResult = scrappingData.find(item => item.url.includes('/station/detailMix'));
+
+            const stationListData = stationListResult?.data?.data;
+            const detailMixData = detailMixResult?.data?.data;
+
+            return {
+                status: stationListData.page?.records?.[0]?.state.toString(),
+                eTotal: detailMixData.allEnergy1
             };
         } catch (error) {
             throw new Error(`Erro to get Canadian Data: ${login} - ${error}`);

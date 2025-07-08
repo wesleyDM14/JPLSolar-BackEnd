@@ -45,6 +45,8 @@ async function updatePlantData() {
                             plantData = await dashboardService.getGoodweData(plant.login, plant.password);
                         } else if (plant.inversor === Inversor.GROWATT) {
                             plantData = await dashboardService.getGrowattData(plant.login, plant.password);
+                        } else if (plant.inversor === Inversor.SOLIS) {
+                            plantData = await dashboardService.getSolisData(plant.login, plant.password);
                         } else {
                             console.error(`Inversor não suportado: ${plant.inversor}`);
                             return;
