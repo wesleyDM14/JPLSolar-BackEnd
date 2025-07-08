@@ -225,8 +225,8 @@ model Conta {
     sicrediLogin     String    @unique
     sicrediPassword  String
     ivPassword       String
-    accessToken      String?
-    refreshToken     String?
+    accessToken      String?   @db.Text
+    refreshToken     String?   @db.Text
     tokenExpireAt    DateTime?
     lastTokenRefresh DateTime?
 
@@ -275,6 +275,7 @@ enum Inversor {
     DEYE
     GOODWE
     GROWATT
+    SOLIS
 }
 
 enum UserRole {

@@ -240,6 +240,8 @@ class SolarPlantController {
                 response = await solarPlantService.getGoodweParams(login, password, req.user.id);
             } else if (inversor === Inversor.GROWATT) {
                 response = await solarPlantService.getGrowattParams(login, password, req.user.id);
+            } else if (inversor === Inversor.SOLIS) {
+                response = await solarPlantService.getSolisParams(login, password, req.user.id);
             } else {
                 return res.status(400).json({ message: 'inversor não suportado na API.' });
             }
@@ -276,6 +278,8 @@ class SolarPlantController {
                 response = await solarPlantService.getErrorDataListGoodwe(login, password, year, plantId, req.user.id);
             } else if (inversor === Inversor.GROWATT) {
                 response = await solarPlantService.getErrorDataListGrowatt(login, password, year, plantId, req.user.id);
+            } else if (inversor === Inversor.SOLIS) {
+                response = await solarPlantService.getErrorDataListSolis(login, password, year, plantId, req.user.id);
             } else {
                 return res.status(400).json({ message: 'inversor não suportado na API.' });
             }
@@ -312,6 +316,8 @@ class SolarPlantController {
                 response = await solarPlantService.getChartByTypeGoodwe(login, password, date, type, plantId, req.user.id);
             } else if (inversor === Inversor.GROWATT) {
                 response = await solarPlantService.getChartByTypeGrowatt(login, password, date, type, plantId, deviceTypeName, deviceSN, req.user.id);
+            }else if (inversor === Inversor.SOLIS) {
+                response = await solarPlantService.getChartByTypeSolis(login, password, date, type, plantId, req.user.id);
             } else {
                 return res.status(400).json({ message: 'inversor não suportado na API.' });
             }
