@@ -89,6 +89,11 @@ export const scrappingSolisData = async (username: string, password: string): Pr
   const page = await browser.newPage();
   const collectedData: { url: string; data: any }[] = [];
 
+  await page.setExtraHTTPHeaders({
+    'Accept-Language': 'pt-BR,pt;q=0.9'
+  });
+  await page.emulateTimezone('America/Sao_Paulo');
+
   const interceptAPI = (url: string) =>
     new Promise<void>((resolve) => {
       const handler = async (response: HTTPResponse) => {
