@@ -1,4 +1,4 @@
-import puppeteer, { ElementHandle, HTTPResponse, Page } from 'puppeteer-core';
+import puppeteer, { ElementHandle, HTTPResponse, Page } from 'puppeteer';
 
 const STATION_LIST_API = 'https://www.soliscloud.com/api/station/list';
 const DETAIL_API_URLS = [
