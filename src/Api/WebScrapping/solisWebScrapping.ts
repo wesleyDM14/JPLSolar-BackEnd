@@ -80,7 +80,7 @@ export const scrappingSolisData = async (username: string, password: string): Pr
     await page.goto('https://www.soliscloud.com/#/homepage', { waitUntil: 'networkidle2' });
 
     // ✅ CORREÇÃO APLICADA AQUI ✅
-    const USERNAME_SELECTOR = 'input[placeholder="Preencha o e-mail ou nome de utilizador"]';
+    const USERNAME_SELECTOR = 'input[placeholder="Input email or username"]';
     await page.waitForSelector(USERNAME_SELECTOR, { timeout: 30000 });
     
     await page.type(USERNAME_SELECTOR, username);
