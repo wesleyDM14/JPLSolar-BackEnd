@@ -105,9 +105,9 @@ export const scrappingSolisData = async (username: string, password: string): Pr
     const alarmPage = `https://www.soliscloud.com/#/station/stationdetail_5?id=${stationId}`;
     await page.goto(alarmPage, { waitUntil: 'networkidle2' });
     
-    await applyDropdown(page, 'Select', 'Inverter');
+    await applyDropdown(page, 'Select', 'Inverter', 0);
     await applyDropdown(page, 'Select Status', 'All', 1);
-    await applyDropdown(page, 'Select', '100/page');
+    await applyDropdown(page, 'Select', '100/page', 1);
 
     const alarmPromise = interceptAPI(ALARM_API_URL);
     await page.waitForSelector('.el-table__body-wrapper');
