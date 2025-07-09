@@ -16,7 +16,7 @@ export const scrappingSolisData = async (username: string, password: string): Pr
   const browser = await puppeteer.launch({
     headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    executablePath: process.env.GOOGLE_CHROME_BIN || undefined,
+    executablePath: process.env.GOOGLE_CHROME_SHIM
   });
 
   const page = await browser.newPage();
@@ -163,7 +163,7 @@ export const scrappingSolisErroData = async (username: string, password: string,
   const browser = await puppeteer.launch({
     headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    executablePath: process.env.GOOGLE_CHROME_BIN || undefined,
+    executablePath: process.env.GOOGLE_CHROME_SHIM
   });
 
   const page = await browser.newPage();
@@ -277,7 +277,7 @@ export const scrappingDashboard = async (username: string, password: string): Pr
   const browser = await puppeteer.launch({
     headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    executablePath: process.env.GOOGLE_CHROME_BIN || undefined,
+    executablePath: process.env.GOOGLE_CHROME_SHIM
   });
 
   const page = await browser.newPage();
