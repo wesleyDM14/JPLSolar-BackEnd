@@ -107,7 +107,7 @@ export const scrappingSolisData = async (username: string, password: string): Pr
     
     await applyDropdown(page, 'Select', 'Inverter', 0);
     await applyDropdown(page, 'Select Status', 'All', 1);
-    await applyDropdown(page, 'Select', '100/page', 1);
+    //await applyDropdown(page, 'Select', '100/page', 1);
 
     const alarmPromise = interceptAPI(ALARM_API_URL);
     await page.waitForSelector('.el-table__body-wrapper');
