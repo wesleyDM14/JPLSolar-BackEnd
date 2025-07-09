@@ -105,9 +105,9 @@ export const scrappingSolisData = async (username: string, password: string): Pr
     const alarmPage = `https://www.soliscloud.com/#/station/stationdetail_5?id=${stationId}`;
     await page.goto(alarmPage, { waitUntil: 'networkidle2' });
     
-    await applyDropdown(page, 'Selecionar', 'Inversor');
-    await applyDropdown(page, 'Select Status', 'Tudo', 1);
-    await applyDropdown(page, 'Selecione', '100/pagina');
+    await applyDropdown(page, 'Select', 'Inverter');
+    await applyDropdown(page, 'Select Status', 'All', 1);
+    await applyDropdown(page, 'Select', '100/page');
 
     const alarmPromise = interceptAPI(ALARM_API_URL);
     await page.waitForSelector('.el-table__body-wrapper');
@@ -180,7 +180,7 @@ export const scrappingSolisErroData = async (username: string, password: string,
     await page.goto('https://www.soliscloud.com/#/homepage', { waitUntil: 'networkidle2' });
 
     // ✅ CORREÇÃO APLICADA AQUI ✅
-    const USERNAME_SELECTOR = 'input[placeholder="Preencha o e-mail ou nome de utilizador"]';
+    const USERNAME_SELECTOR = 'input[placeholder="Input email or username"]';
     await page.waitForSelector(USERNAME_SELECTOR, { timeout: 30000 });
     
     await page.type(USERNAME_SELECTOR, username);
@@ -194,9 +194,9 @@ export const scrappingSolisErroData = async (username: string, password: string,
     const alarmPage = `https://www.soliscloud.com/#/station/stationdetail_5?id=${plantId}`;
     await page.goto(alarmPage, { waitUntil: 'networkidle2' });
     
-    await applyDropdown(page, 'Selecionar', 'Inversor');
-    await applyDropdown(page, 'Select Status', 'Tudo', 1);
-    await applyDropdown(page, 'Selecione', '100/pagina');
+    await applyDropdown(page, 'Select', 'Inverter');
+    await applyDropdown(page, 'Select Status', 'All', 1);
+    await applyDropdown(page, 'Select', '100/page');
 
     const alarmPromise = interceptAPI(ALARM_API_URL);
     await page.waitForSelector('.el-table__body-wrapper');
@@ -250,7 +250,7 @@ export const scrappingDashboard = async (username: string, password: string): Pr
     await page.goto('https://www.soliscloud.com/#/homepage', { waitUntil: 'networkidle2' });
 
     // ✅ CORREÇÃO APLICADA AQUI ✅
-    const USERNAME_SELECTOR = 'input[placeholder="Preencha o e-mail ou nome de utilizador"]';
+    const USERNAME_SELECTOR = 'input[placeholder="Input email or username"]';
     await page.waitForSelector(USERNAME_SELECTOR, { timeout: 30000 });
     
     await page.type(USERNAME_SELECTOR, username);
