@@ -86,7 +86,7 @@ export const scrappingSolisData = async (username: string, password: string): Pr
     await new Promise(r => setTimeout(r, 2000));
     const tabHandle = await page.evaluateHandle(() => {
       const spans = Array.from(document.querySelectorAll('.gl-private-tabs .f__14'));
-      const targetSpan = spans.find(span => span.textContent?.trim().includes('Registrador'));
+      const targetSpan = spans.find(span => span.textContent?.trim().includes('Datalogger'));
       return targetSpan ? targetSpan.parentElement : null;
     });
     if (tabHandle && tabHandle.asElement()) {
