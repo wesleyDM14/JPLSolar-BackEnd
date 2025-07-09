@@ -15,20 +15,24 @@ const applyDropdown = async (
   page: Page,
   placeholderText: string,
   optionText: string,
-  dropdownIndex = 0,
-  optionIndex = 0
+  dropdownIndex = 0
 ) => {
-  console.log(`Filtro: Buscando dropdown [${placeholderText}] (índice ${dropdownIndex}) para selecionar a opção "${optionText}" (índice ${optionIndex})...`);
+  console.log(`\n--- [DEBUG] Iniciando applyDropdown para placeholder: "${placeholderText}" ---`);
 
   // 1. Encontra todos os inputs que correspondem ao placeholder
   const matchingInputs: ElementHandle[] = [];
   const allInputs = await page.$$('input.el-input__inner');
-  for (const input of allInputs) {
+  console.log(`[DEBUG] Encontrados ${allInputs.length} inputs na página.`);
+
+  for (const [index, input] of allInputs.entries()) {
     const attr = await input.evaluate(el => el.getAttribute('placeholder'));
+    console.log(`[DEBUG] Input #${index} tem o placeholder: "${attr}"`);
     if (attr && attr.includes(placeholderText)) {
       matchingInputs.push(input);
     }
   }
+
+  console.log(`[DEBUG] Encontrados ${matchingInputs.length} dropdowns com placeholder "${placeholderText}".`);
 
   // 2. Verifica se existe um dropdown no índice que queremos
   if (matchingInputs.length <= dropdownIndex) {
@@ -37,25 +41,38 @@ const applyDropdown = async (
 
   // 3. Clica no dropdown correto
   const targetInput = matchingInputs[dropdownIndex];
+  console.log(`[DEBUG] Clicando no dropdown de índice ${dropdownIndex}...`);
   await targetInput.click();
 
   // 4. Espera as opções aparecerem
-  await page.waitForSelector('.el-select-dropdown:not([style*="display: none"]) .el-select-dropdown__item');
+  console.log('[DEBUG] Aguardando o painel do dropdown ficar visível...');
+  await page.waitForSelector('.el-select-dropdown:not([style*="display: none"]) .el-select-dropdown__item', { timeout: 10000 });
+  console.log('[DEBUG] Painel do dropdown está visível.');
+  await new Promise(r => setTimeout(r, 1000)); // Pausa para garantir que as opções renderizem
 
-  // 5. Usa a sua lógica original para encontrar a opção pelo texto e pelo índice da opção
-  const clicked = await page.evaluate((text, index) => {
+  // 5. Loga todas as opções visíveis para depuração
+  const availableOptions = await page.evaluate(() => {
+    const options = Array.from(document.querySelectorAll('.el-select-dropdown:not([style*="display: none"]) .el-select-dropdown__item span'));
+    return options.map(opt => opt.textContent?.trim());
+  });
+  console.log(`[DEBUG] Opções encontradas no dropdown: [${availableOptions.join(', ')}]`);
+
+  // 6. Tenta encontrar e clicar na opção desejada
+  const clicked = await page.evaluate((text) => {
     const options = Array.from(document.querySelectorAll('.el-select-dropdown__item'));
-    const matches = options.filter(i => i.textContent?.trim() === text);
-    if (matches.length > index) {
-      (matches[index] as HTMLElement).click();
+    const targetOption = options.find(i => i.textContent?.trim() === text);
+    if (targetOption) {
+      (targetOption as HTMLElement).click();
       return true;
     }
     return false;
-  }, optionText, optionIndex);
+  }, optionText);
 
   if (!clicked) {
-    throw new Error(`❌ Opção "${optionText}" (ocorrência ${optionIndex + 1}) não encontrada no dropdown.`);
+    throw new Error(`❌ Opção de texto "${optionText}" não foi encontrada entre as opções visíveis.`);
   }
+  console.log(`[DEBUG] Clicou com sucesso na opção "${optionText}".`);
+  console.log(`--- [DEBUG] Finalizado applyDropdown para: "${placeholderText}" ---\n`);
 };
 
 
@@ -119,12 +136,9 @@ export const scrappingSolisData = async (username: string, password: string): Pr
     const alarmPage = `https://www.soliscloud.com/#/station/stationdetail_5?id=${stationId}`;
     await page.goto(alarmPage, { waitUntil: 'networkidle2' });
 
-    await applyDropdown(page, 'Select', 'Inverter', 0, 0); // 1º dropdown "Select", 1ª opção "Inverter"
-    console.log('aqui foi');
-    await applyDropdown(page, 'Select Status', 'All', 0, 0); // Dropdown "Status", 1ª opção "All" (mude o 0 final se necessário)
-    console.log('aqui tbm');
-    await applyDropdown(page, 'Select', '100/page', 1, 0);
-    console.log('ihuu');
+    await applyDropdown(page, 'Select', 'Inverter', 0);
+    await applyDropdown(page, 'Select Status', 'All');
+    await applyDropdown(page, 'Select', '100/page', 1);
 
     const alarmPromise = interceptAPI(ALARM_API_URL);
     await page.waitForSelector('.el-table__body-wrapper');
@@ -211,12 +225,9 @@ export const scrappingSolisErroData = async (username: string, password: string,
     const alarmPage = `https://www.soliscloud.com/#/station/stationdetail_5?id=${plantId}`;
     await page.goto(alarmPage, { waitUntil: 'networkidle2' });
 
-    await applyDropdown(page, 'Select', 'Inverter', 0, 0); // 1º dropdown "Select", 1ª opção "Inverter"
-    console.log('aqui foi');
-    await applyDropdown(page, 'Select Status', 'All', 0, 0); // Dropdown "Status", 1ª opção "All" (mude o 0 final se necessário)
-    console.log('aqui tbm');
-    await applyDropdown(page, 'Select', '100/page', 1, 0);
-
+    await applyDropdown(page, 'Select', 'Inverter', 0);
+    await applyDropdown(page, 'Select Status', 'All');
+    await applyDropdown(page, 'Select', '100/page', 1);
     const alarmPromise = interceptAPI(ALARM_API_URL);
     await page.waitForSelector('.el-table__body-wrapper');
     await Promise.race([
