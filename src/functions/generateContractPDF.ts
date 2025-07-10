@@ -463,15 +463,7 @@ export async function generateContractPDF(contractId: string, userId: string, ca
                 </body>
             </html>
         `;
-         const puppeteerArgs = {
-            headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox'],
-            // Usando a lógica que já funciona para o scraper
-            executablePath: process.env.NODE_ENV === 'production'
-                ? '/app/.chrome-for-testing/chrome-linux64/chrome'
-                : undefined,
-        };
-
+        
 
         const options = {
             format: 'A4',
@@ -481,8 +473,7 @@ export async function generateContractPDF(contractId: string, userId: string, ca
                 left: '75px',   // Margem esquerda
                 right: '75px'   // Margem direita
             },
-            printBackground: true,
-            puppeteerArgs: puppeteerArgs
+            printBackground: true
         };
         const file = { content: htmlContent };
 

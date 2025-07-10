@@ -146,34 +146,21 @@ export async function generatePromissoriaPDF(contractId: string, userId: string,
                     </div>
                     <br/>
                     ${avalista && enderecoAvalista ?
-                `<div class="signature">
+                            `<div class="signature">
                                 <hr />
                                 <p>${avalista.nome.toUpperCase()}</p>
                                 <p>CPF: ${formatCPF(avalista.cpf)}</p>
                                 <p>${enderecoAvalista.logradouro + ', Nº' + enderecoAvalista.numero + ', ' + enderecoAvalista.bairro + ', ' + enderecoAvalista.cidade + ' - ' + enderecoAvalista.uf + ', ' + formatCEP(enderecoAvalista.cep)}</p>
                             </div>`
-                :
-                ''
+                        :
+                            ''
             }
                 </body>
             </html>
         `;
+        
 
-        const puppeteerArgs = {
-            headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox'],
-            // Usando a lógica que já funciona para o scraper
-            executablePath: process.env.NODE_ENV === 'production'
-                ? '/app/.chrome-for-testing/chrome-linux64/chrome'
-                : undefined,
-        };
-
-
-        const options = { 
-            format: 'A4',
-            puppeteerArgs: puppeteerArgs
-        };
-
+        const options = { format: 'A4' };
         const file = { content: htmlContent };
 
         const pdfBuffer = generatePdf(file, options, (err, buffer) => {

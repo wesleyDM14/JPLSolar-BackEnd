@@ -512,7 +512,7 @@ asynckit@^0.4.0:
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
   integrity sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==
 
-axios@^1.6.2, axios@^1.7.7:
+axios@^1.7.7:
   version "1.7.8"
   resolved "https://registry.yarnpkg.com/axios/-/axios-1.7.8.tgz#1997b1496b394c21953e68c14aaa51b7b5de3d6e"
   integrity sha512-Uu0wb7KNqK2t5K+YQyVCLM76prD5sRFjKHbJYCP1J7JFGEQ6nN7HWn9+04LAeiJ3ji54lgS/gZCH1oxyrf1SPw==
@@ -1149,10 +1149,17 @@ encodeurl@~2.0.0:
   resolved "https://registry.yarnpkg.com/encodeurl/-/encodeurl-2.0.0.tgz#7b8ea898077d7e409d3ac45474ea38eaf0857a58"
   integrity sha512-Q0n9HRi4m6JuGIV1eFlmvJB7ZEVxu93IrMyiMsGC0lrMJMWzRgx6WGquyfQgZVb31vhGgXnfmPNNXmxnOkRBrg==
 
-end-of-stream@^1.1.0, end-of-stream@^1.4.1:
+end-of-stream@^1.1.0:
   version "1.4.4"
   resolved "https://registry.yarnpkg.com/end-of-stream/-/end-of-stream-1.4.4.tgz#5ae64a5f45057baf3626ec14da0ca5e4b2431eb0"
   integrity sha512-+uw1inIHVPQoaVuHzRyXd21icM+cnt4CzD5rW+NC1wjOUSTOs+Te7FOv7AhN7vS9x/oIyhLP5PR1H+phQAHu5Q==
+  dependencies:
+    once "^1.4.0"
+
+end-of-stream@^1.4.1:
+  version "1.4.5"
+  resolved "https://registry.yarnpkg.com/end-of-stream/-/end-of-stream-1.4.5.tgz#7344d711dea40e0b74abc2ed49778743ccedb08c"
+  integrity sha512-ooEGc6HP26xXq/N+GCGOT0JKCLDGrq2bQUZrQ7gyrJiZANJ/8YDTxTpQBXGMn+WbIQXNVpyWymm7KYVICQnyOg==
   dependencies:
     once "^1.4.0"
 
@@ -1367,9 +1374,9 @@ findup-sync@^5.0.0:
     resolve-dir "^1.0.1"
 
 flat-util@^1.1.6:
-  version "1.1.9"
-  resolved "https://registry.yarnpkg.com/flat-util/-/flat-util-1.1.9.tgz#87095653dcf77226a3bc99f7157794c2335b2b08"
-  integrity sha512-BOTMw/6rbbxVjv5JQvwgGMc2/6wWGd2VeyTvnzvvE49VRjS0tTxLbry/QVP1yPw8SaAOBYsnixmzruXoqjdUHA==
+  version "1.1.11"
+  resolved "https://registry.yarnpkg.com/flat-util/-/flat-util-1.1.11.tgz#4ec1e957f8ff589ff26701c45379b18d5f8e4a0a"
+  integrity sha512-h9ho3lHr5hDTQZKLqFDqIliDV/A8yCyP7UoSIBT4U3d7VfA/EeqsC8cxWJGIr5oCxZzMD/3BEx3SLYFX6hD8ng==
 
 follow-redirects@^1.15.6:
   version "1.15.9"
@@ -2476,11 +2483,11 @@ readdirp@^3.6.0, readdirp@~3.6.0:
     picomatch "^2.2.1"
 
 remote-content@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/remote-content/-/remote-content-4.0.0.tgz#c1a4820a24c93a8fe064fa5e21d4ad96ba7094f4"
-  integrity sha512-9EKiAXe8KwgNaMnIEfjxCclU4Mt4o9i2UxJdoahx+cRZTjLkjQdrVJ7PUhU26qmZQjSuf6HdJYtlLq6Uj4umVg==
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/remote-content/-/remote-content-4.0.1.tgz#656872072e59e5303c89ec3b40175a664e286ae6"
+  integrity sha512-W2lDnjK4k1vAJg7UZArH/rkNYJqZuteHkX1jS7tO9TJUiLhDcu2Ejvj97gK/XbZNDhzld0sn11OW8vihin4cAg==
   dependencies:
-    axios "^1.6.2"
+    axios "^1.7.9"
     proxy-from-env "^1.1.0"
 
 require-directory@^2.1.1:
